@@ -1,8 +1,8 @@
 CREATE TABLE transaction (
     rowid BIGINT NOT NULL AUTO_INCREMENT,
     txuuid VARCHAR(36) COMMENT 'transaction uuid',
-    payeruuid VARCHAR(36) REFERENCES user (useruuid),
-    payeeuuid VARCHAR(36) REFERENCES user (useruuid),
+    payeruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
+    payeeuuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
     amount BIGINT,
     bc_txuuid VARCHAR(36) COMMENT 'blockchain transaction uuid for invoking chaincode function',
     bc_blocknum BIGINT COMMENT 'the block number in the blockchain as a result of invoking chaincode function',
