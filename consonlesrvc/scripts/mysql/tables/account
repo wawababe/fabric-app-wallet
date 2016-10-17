@@ -1,0 +1,12 @@
+CREATE TABLE account (
+    rowid BIGINT NOT NULL AUTO_INCREMENT,
+    accountuuid VARCHAR(36),
+    useruuid VARCHAR(36) REFERENCES user(useruuid),
+    amount BIGINT,
+    deleted TINYINT UNSIGNED ZEROFILL DEFAULT 0,
+    insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (rowid),
+    UNIQUE KEY (accountuuid),
+    INDEX USING BTREE (useruuid)
+    );

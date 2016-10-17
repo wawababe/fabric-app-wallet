@@ -1,0 +1,13 @@
+CREATE TABLE user (
+    rowid BIGINT NOT NULL AUTO_INCREMENT,
+    useruuid VARCHAR(36),
+    username VARCHAR(255),
+    password VARCHAR(255),
+    deleted  TINYINT UNSIGNED ZEROFILL DEFAULT 0,
+    insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (rowid),
+    UNIQUE KEY (useruuid),
+    UNIQUE KEY (username),
+    INDEX USING BTREE (username)
+    );

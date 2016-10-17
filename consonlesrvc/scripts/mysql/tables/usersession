@@ -1,0 +1,10 @@
+CREATE TABLE usersession (
+    rowid BIGINT NOT NULL AUTO_INCREMENT,
+    sessionuuid VARCHAR(36),
+    useruuid VARCHAR(36) REFERENCES user(useruuid),
+    expiredAt DATETIME,
+    insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (rowid),
+    UNIQUE KEY (sessionuuid)
+    );
