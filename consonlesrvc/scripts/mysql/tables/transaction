@@ -6,6 +6,7 @@ CREATE TABLE transaction (
     amount BIGINT,
     bc_txuuid VARCHAR(36) COMMENT 'blockchain transaction uuid for invoking chaincode function',
     bc_blocknum BIGINT COMMENT 'the block number in the blockchain as a result of invoking chaincode function',
+    status VARCHAR(20),
     insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),

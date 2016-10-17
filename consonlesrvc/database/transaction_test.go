@@ -21,6 +21,7 @@ func TestAddTransaction(t *testing.T) {
 		trans[i].PayerUUID = util.GenerateUUID()
 		trans[i].PayeeUUID = util.GenerateUUID()
 		trans[i].Amount = 30
+		trans[i].Status = "pending"
 		dbLogger.Debugf("transaction: %#v", trans[i])
 	}
 	trans[0].PayerUUID = "5cdb617c-2712-480a-a02b-facd8c86e579"
@@ -79,3 +80,34 @@ func TestGetTransactionsByPayeruuid(t *testing.T) {
 		dbLogger.Debugf("Accounts #%d: %v", i, *txitem)
 	}
 }
+
+func TestUpdateTransaction(t *testing.T) {
+	var db *sql.DB
+	var err error
+	var us *Transaction
+	if db, err = sql.Open("mysql", DSN); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+	}
+
+	var txuuid string
+	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
+	txuuid = "7382e24f-bd1c-4e41-ab86-e819e823b75b"
+	us, err = GetTransaction(db, txuuid)
+	if us == nil || err != nil{
+		t.Errorf("Failed retrieving transaction")
+	}
+	dbLogger.Debugf("Get transaction: %#v", *us)
+
+	us.BC_txuuid = util.GenerateUUID()
+	us.BC_blocknum = 12
+	us.Status = "fin"
+	var affectedrows int64 = 0
+	affectedrows, err = UpdateTransaction(db, us)
+	if affectedrows != 1 {
+		t.Errorf("failed updating transaction %v\n err: %v", *us, err)
+	}
+	dbLogger.Debugf("Updated transaction: %#v", *us)
+
+}
+
+

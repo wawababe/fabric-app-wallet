@@ -104,3 +104,34 @@ func GetAccountsByUseruuid(db *sql.DB, useruuid string)([]*Account, error){
 
 	return accounts, nil
 }
+
+
+func UpdateAccount(db *sql.DB, u *Account)(int64, error){
+	dbLogger.Debug("UpdateAccount...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE account SET amount = ? WHERE accountuuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	addResult, err = stmt.Exec(u.Amount, u.AccountUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}

@@ -81,3 +81,33 @@ func TestGetAccountsByUseruuid(t *testing.T) {
 	}
 
 }
+
+func TestUpdateAccount(t *testing.T) {
+	var db *sql.DB
+	var err error
+	var us *Account
+	if db, err = sql.Open("mysql", DSN); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+	}
+
+	var useruuid, accountuuid string
+	useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
+	accountuuid = "b7e97e66-dba8-4cf7-af2f-fe17ee7e7c03"
+	us, err = GetAccount(db, useruuid, accountuuid)
+	if us == nil || err != nil{
+		t.Error("Failed retrieving user account: %v", err)
+	}
+	dbLogger.Debugf("Get user account: %#v", *us)
+
+	us.Amount -= 10
+
+	var affectedrows int64 = 0
+	affectedrows, err = UpdateAccount(db, us)
+	if affectedrows != 1 {
+		t.Errorf("Failed updating account to %v\n err: %v", *us, err)
+	}
+
+	dbLogger.Debugf("Updated user account: %#v", *us)
+
+
+}
