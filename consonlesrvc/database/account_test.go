@@ -3,7 +3,7 @@ package database
 import (
 	"testing"
 	"database/sql"
-	"github.com/hyperledger/fabric/core/util"
+	util "baas/app-wallet/consonlesrvc/common"
 )
 
 func TestAddAccount(t *testing.T) {

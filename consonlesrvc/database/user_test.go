@@ -7,7 +7,7 @@ import (
 	"database/sql"
 	"io"
 	"fmt"
-	"github.com/hyperledger/fabric/core/util"
+	util "baas/app-wallet/consonlesrvc/common"
 	_ "github.com/go-sql-driver/mysql"
 )
 

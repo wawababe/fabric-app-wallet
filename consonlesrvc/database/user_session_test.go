@@ -4,7 +4,7 @@ import (
 	"testing"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/hyperledger/fabric/core/util"
+	util "baas/app-wallet/consonlesrvc/common"
 )
 
 

@@ -24,6 +24,18 @@ func (t *UserSession) AddExpiredTimeByDays(days int){
 
 }
 
+func (t *UserSession) RefreshExpiredTimeByDays(days int){
+	tm, _ := time.Parse(DATETIME_FORMAT, time.Now().Format(DATETIME_FORMAT))
+	tm.AddDate(0, 0, days)
+	t.ExpiredAt = tm.Format(DATETIME_FORMAT)
+}
+
+func (t *UserSession) IsExpired() bool{
+
+	exptm, _ := time.Parse(DATETIME_FORMAT, t.ExpiredAt)
+	return exptm.Before(time.Now())
+}
+
 
 // AddUserSession: insert a new user session into table userSession
 func AddUserSession(db *sql.DB, us *UserSession)(int64, error) {
@@ -84,3 +96,34 @@ func GetUserSession(db *sql.DB, userID string, sessionUUID string)(*UserSession,
 	dbLogger.Debugf("Get user session: %#v", *us)
 	return us, nil
 }
+
+func UpdateUserSession(db *sql.DB, us *UserSession)(int64, error){
+	dbLogger.Debug("UpdateUserSession...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE usersession SET expiredat = ? WHERE sessionuuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	addResult, err = stmt.Exec(us.ExpiredAt, us.SessionUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}
+

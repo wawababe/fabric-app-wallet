@@ -3,9 +3,11 @@ package database
 import (
 	"os"
 	"baas/app-wallet/chaincode/github.com/op/go-logging"
+	"database/sql"
 )
 
 var dbLogger *logging.Logger = logging.MustGetLogger("database")
+var db *sql.DB
 
 const (
 	DSN string = "root:101812@/app_wallet"
@@ -28,4 +30,16 @@ func init(){
 	bkLeveled := logging.AddModuleLevel(bkFormatter)
 	bkLeveled.SetLevel(logging.DEBUG, "")
 	logging.SetBackend(bkLeveled)
+	db = new(sql.DB)
+
+	var err error
+	if db, err = sql.Open("mysql", DSN); err != nil {
+		dbLogger.Fatal(err)
+	}
+
+
+}
+
+func GetDB()*sql.DB {
+	return db
 }
