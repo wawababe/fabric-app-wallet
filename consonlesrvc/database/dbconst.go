@@ -2,7 +2,7 @@ package database
 
 import (
 	"os"
-	"baas/app-wallet/chaincode/github.com/op/go-logging"
+	"github.com/op/go-logging"
 	"database/sql"
 )
 
