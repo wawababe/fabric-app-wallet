@@ -3,10 +3,14 @@ CREATE TABLE account (
     accountuuid VARCHAR(36),
     useruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
     amount BIGINT,
+    accountname VARCHAR(255),
+    bc_txuuid VARCHAR(36) DEFAULT "",
+    status VARCHAR(20) DEFAULT "pending",
     deleted TINYINT UNSIGNED ZEROFILL DEFAULT 0,
     insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),
     UNIQUE KEY (accountuuid),
+    UNIQUE KEY (accountname),
     INDEX USING BTREE (useruuid)
     );

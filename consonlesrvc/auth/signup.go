@@ -27,7 +27,7 @@ type Signup struct {
 }
 
 
-func (t *Signup) Post(req *SignupRequest)(*SignupResponse){
+func (t *Signup) post(req *SignupRequest)(*SignupResponse){
 	var res *SignupResponse = new(SignupResponse)
 	var err error
 	var db *sql.DB = database.GetDB()
@@ -76,13 +76,14 @@ func SignupPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var res *SignupResponse
 	var resBytes []byte
 	var err error
-	var t *Signup
 
 	w.Header().Set("Content-Type", "application/json")
 	r.ParseForm()
 	req.username = r.PostForm.Get("username")
 	req.password = r.PostForm.Get("password")
-	res = t.Post(req)
+
+	var t Signup
+	res = t.post(req)
 
 	resBytes, err = json.Marshal(*res)
 	if err != nil {

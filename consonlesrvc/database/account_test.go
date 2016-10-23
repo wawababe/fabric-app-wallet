@@ -20,9 +20,13 @@ func TestAddAccount(t *testing.T) {
 		accounts[i].AccountUUID = util.GenerateUUID()
 		accounts[i].UserUUID = util.GenerateUUID()
 		accounts[i].Amount = 200
+		accounts[i].AccountName = accounts[i].AccountUUID
+		accounts[i].BC_TXUUID = ""
+		accounts[i].Status = "pending"
 		dbLogger.Debugf("user account: %#v", accounts[i])
 	}
 	accounts[0].UserUUID = "5cdb617c-2712-480a-a02b-facd8c86e579"
+	accounts[0].AccountName += "-" + "lolwallet"
 	accounts[1].AccountUUID = accounts[0].AccountUUID
 
 	var tests = []struct{
@@ -57,11 +61,30 @@ func TestGetAccountByUserUUID(t *testing.T) {
 	accountuuid = "b7e97e66-dba8-4cf7-af2f-fe17ee7e7c03"
 	us, err = GetAccount(db, useruuid, accountuuid)
 	if us == nil || err != nil{
-		t.Error("Failed retrieving user account: %v", err)
+		t.Errorf("Failed retrieving user account: %v", err)
+		return
 	}
 	dbLogger.Debugf("Get user account: %#v", *us)
 }
 
+func TestGetAccountByName(t *testing.T) {
+	var db *sql.DB
+	var err error
+	var us *Account
+	if db, err = sql.Open("mysql", DSN); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+	}
+
+	var accountname string = "e55d7f90-e685-40a1-8839-bb61a7e000db-lolwallet"
+
+	us, err = GetAccountByName(db, accountname)
+	if us == nil || err != nil{
+		t.Errorf("Failed retrieving user account: %v", err)
+		return
+	}
+	dbLogger.Debugf("Get user account: %#v", *us)
+
+}
 
 func TestGetAccountsByUseruuid(t *testing.T) {
 	var db *sql.DB

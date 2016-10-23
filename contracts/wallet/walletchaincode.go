@@ -52,8 +52,8 @@ func (w *WalletChaincode) createAccount(stub shim.ChaincodeStubInterface, args [
 	act.UserUUID = args[0]
 	act.AccountUUID = args[1]
 	if act.Amount, err = strconv.ParseInt(args[2], 10, 64); err != nil {
-		wtLogger.Errorf("failed to parse amount %s as int64", args[3])
-		return nil, fmt.Errorf("failed to parse amount %s as int64", args[3])
+		wtLogger.Errorf("failed to parse amount %s as int64", args[2])
+		return nil, fmt.Errorf("failed to parse amount %s as int64", args[2])
 	}
 
 	if err = act.Create(stub); err != nil {

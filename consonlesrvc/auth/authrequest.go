@@ -8,18 +8,18 @@ import (
 )
 
 type AuthRequest struct {
-	Username string `json:"username`
+	Username string `json:"username"`
 	SessionID string `json:"sessionid"`
 	AuthToken string `json:"authtoken"`
 }
 
 type AuthResponse struct {
 	common.BaseResponse
-	UserUUID string `json:"useruuid`
+	UserUUID string `json:"useruuid"`
 }
 
 //IsAuthRequestValid: check whether request req is valid; set the response res
-func (req *AuthRequest) IsAuthRequestValid(res *AuthResponse)(bool){
+func (req *AuthRequest) IsRequestValid(res *AuthResponse)(bool){
 	var err error
 	var db *sql.DB = database.GetDB()
 	var user *database.User = new(database.User)
@@ -52,7 +52,7 @@ func (req *AuthRequest) IsAuthRequestValid(res *AuthResponse)(bool){
 	if session.IsExpired() {
 		authLogger.Errorf("failed to validate request, session has expired in %s", session.ExpiredAt)
 		res.Status = "error"
-		res.Message = "failed to validate request, session has expired in" + session.ExpiredAt
+		res.Message = "failed to validate request, session has expired at " + session.ExpiredAt
 		return false
 	}
 	res.Status = "ok"

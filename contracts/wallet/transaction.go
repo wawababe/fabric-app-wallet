@@ -20,6 +20,9 @@ type Transaction struct {
 // write the transaction into blockchain
 func (t *Transaction) PutTransaction(stub shim.ChaincodeStubInterface) (error) {
 	wtLogger.Debug("start to PutTransaction...")
+	defer func(){
+		wtLogger.Debug("start to PutTransaction...Done!")
+	}()
 	txBytes, err := json.Marshal(*t)
 	if err != nil {
 		wtLogger.Fatalf("failed marshalling transaction %#v as bytes: %v", *t, err)
@@ -33,7 +36,6 @@ func (t *Transaction) PutTransaction(stub shim.ChaincodeStubInterface) (error) {
 	}
 	wtLogger.Debugf("successed in putting transaction %#v with key %s into ledger", *t, t.buildKey(t.TxUUID))
 
-	wtLogger.Debug("start to PutTransaction...Done!")
 	return nil
 }
 
@@ -44,6 +46,9 @@ func (t *Transaction) buildKey(txUUID string) (key string) {
 
 func (t *Transaction) GetTransaction(stub shim.ChaincodeStubInterface, txuuid string) error {
 	wtLogger.Debug("start to GetTransaction...")
+	defer func(){
+		wtLogger.Debug("start to GetTransaction...Done!")
+	}()
 	var txBytes []byte
 	var err error
 	if txBytes, err = stub.GetState(t.buildKey(txuuid)); err != nil {

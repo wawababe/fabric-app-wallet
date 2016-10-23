@@ -1,12 +1,13 @@
 package database
 
 import (
-	"os"
 	"github.com/op/go-logging"
 	"database/sql"
+	"baas/app-wallet/consonlesrvc/common"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-var dbLogger *logging.Logger = logging.MustGetLogger("database")
+var dbLogger *logging.Logger = common.NewLogger("database")//logging.MustGetLogger("database")
 var db *sql.DB
 
 const (
@@ -22,14 +23,6 @@ var (
 )
 
 func init(){
-	bk := logging.NewLogBackend(os.Stdout, "", 0)
-	var format = logging.MustStringFormatter(
-		`%{color} %{time:2006-01-02T15:04:05} [%{module}] %{shortfunc} > %{level:.4s} %{id: 03x} %{color: reset}: %{message}`,
-	)
-	bkFormatter := logging.NewBackendFormatter(bk, format)
-	bkLeveled := logging.AddModuleLevel(bkFormatter)
-	bkLeveled.SetLevel(logging.DEBUG, "")
-	logging.SetBackend(bkLeveled)
 	db = new(sql.DB)
 
 	var err error

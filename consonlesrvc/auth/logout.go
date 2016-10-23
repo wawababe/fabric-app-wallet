@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/julienschmidt/httprouter"
-	"baas/app-wallet/consonlesrvc/common"
 	"encoding/json"
 	"database/sql"
 	"baas/app-wallet/consonlesrvc/database"
@@ -14,36 +13,23 @@ type LogoutRequest struct{
 	AuthRequest
 }
 
-func (t *LogoutRequest) CopyTo(dst *AuthRequest){
-	dst.SessionID = t.SessionID
-	dst.Username = t.Username
-	dst.AuthToken = t.AuthToken
-}
-
 type LogoutResponse struct{
-	common.BaseResponse
-}
-
-func (t *LogoutResponse) CopyFrom(src *AuthResponse){
-	t.Status = src.Status
-	t.Message = src.Message
+	AuthResponse
 }
 
 type Logout struct {
 }
 
 
-func (t *Logout) Post(req *LogoutRequest) *LogoutResponse {
+func (t *Logout) post(req *LogoutRequest) *LogoutResponse {
 	var res *LogoutResponse = new(LogoutResponse)
 	var err error
 	var db *sql.DB = database.GetDB()
 
-	var authReq *AuthRequest = new(AuthRequest)
 	var authRes *AuthResponse = new(AuthResponse)
-	req.CopyTo(authReq)
-	if !authReq.IsAuthRequestValid(authRes) {
-		authLogger.Warningf("request not valid: %#v", *authReq)
-		res.CopyFrom(authRes)
+	if !req.IsRequestValid(&res.AuthResponse) {
+		authLogger.Warningf("request not valid: %#v", *req)
+		res.UserUUID = ""
 		return res
 	}
 
@@ -63,20 +49,22 @@ func (t *Logout) Post(req *LogoutRequest) *LogoutResponse {
 	return res
 }
 
-
+// route: /auth/logout, method: POST
 func LogoutPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	var req *LogoutRequest = new(LogoutRequest)
 	var res *LogoutResponse
 	var resBytes []byte
 	var err error
-	var t *Logout
+
 
 	w.Header().Set("Content-Type", "application/json")
 	r.ParseForm()
 	req.Username = r.PostForm.Get("username")
 	req.SessionID = r.PostForm.Get("sessionid")
 	req.AuthToken = r.PostForm.Get("authtoken")
-	res = t.Post(req)
+
+	var t Logout
+	res = t.post(req)
 
 	resBytes, err = json.Marshal(*res)
 	if err != nil {

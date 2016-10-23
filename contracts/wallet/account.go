@@ -17,7 +17,10 @@ type Account struct {
 // Create: create a new account
 func (t *Account) Create(stub shim.ChaincodeStubInterface) (error) {
 	wtLogger.Debug("start to create account....")
-	wtLogger.Infof("blockchian transaction uuid is %s", stub.GetTxID())
+	defer func(){
+		wtLogger.Debug("start to create account...Done!")
+	}()
+
 	var err error
 
 	if len(t.UserUUID) == 0 || len(t.AccountUUID) == 0 {
@@ -36,7 +39,6 @@ func (t *Account) Create(stub shim.ChaincodeStubInterface) (error) {
 		return fmt.Errorf("failed putaccount: %v", err)
 	}
 	wtLogger.Debugf("successed in creating account %#v", *t)
-	wtLogger.Debug("start to create account...Done!")
 	return nil
 }
 
@@ -48,7 +50,6 @@ func (t *Account) Delete(stub shim.ChaincodeStubInterface, account string) error
 
 
 func (t *Account) putAccount(stub shim.ChaincodeStubInterface) error {
-	wtLogger.Debug("start to PutAccount...")
 	acBytes, err := json.Marshal(*t)
 	if err != nil {
 		wtLogger.Fatalf("failed marshalling account %#v as bytes: %v", *t, err)
@@ -62,7 +63,6 @@ func (t *Account) putAccount(stub shim.ChaincodeStubInterface) error {
 	}
 	wtLogger.Debugf("successed in putting account %#v with key %s into ledger", *t, t.buildKey(t.AccountUUID))
 
-	wtLogger.Debug("start to PutAccount...Done!")
 	return nil
 }
 
@@ -73,6 +73,9 @@ func (t *Account) buildKey(accountuuid string) (key string) {
 
 func (t *Account) GetAccount(stub shim.ChaincodeStubInterface, accountuuid string) (error) {
 	wtLogger.Debug("start to GetAccount...")
+	defer func(){
+		wtLogger.Debug("start to GetAccount...Done!")
+	}()
 	var acBytes []byte
 	var err error
 	if acBytes, err = stub.GetState(t.buildKey(accountuuid)); err != nil {

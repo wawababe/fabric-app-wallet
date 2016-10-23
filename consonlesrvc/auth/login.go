@@ -26,7 +26,7 @@ type Login struct {
 }
 
 
-func (t *Login) Post(loginReq *LoginRequest)(*LoginResponse){
+func (t *Login) post(loginReq *LoginRequest)(*LoginResponse){
 	var err error
 	var loginRes *LoginResponse = new(LoginResponse)
 
@@ -76,17 +76,17 @@ func LoginPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if err = r.ParseForm(); err != nil {
-		authLogger.Fatalf("failed to parse request, router /auth/login: %v", err)
+		authLogger.Fatalf("failed to parse request for url %s: %v", r.URL.Path, err)
 	}
 
 	loginReq.username = r.PostForm.Get("username")
 	loginReq.password = r.PostForm.Get("password")
 	//loginReq.username = r.FormValue("username")
 	//loginReq.password = r.FormValue("password")
-	authLogger.Debugf("parsed request for /auth/login: %#v", loginReq)
+	authLogger.Debugf("parsed request for url %s: %#v", r.URL.Path, loginReq)
 
 	var t Login
-	loginRes = t.Post(loginReq)
+	loginRes = t.post(loginReq)
 
 	resBytes, err = json.Marshal(*loginRes)
 	if err != nil {
