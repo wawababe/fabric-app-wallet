@@ -10,11 +10,8 @@ import (
 	"database/sql"
 	"baas/app-wallet/consonlesrvc/database"
 	util "baas/app-wallet/consonlesrvc/common"
-	"os"
-	"bytes"
-	"strconv"
-	"time"
 	"strings"
+	"baas/app-wallet/consonlesrvc/wallet/task"
 )
 
 type CreateRequest struct {
@@ -25,7 +22,7 @@ type CreateRequest struct {
 type CreateResponse struct {
 	authsrvc.AuthResponse
 	AccountUUID string `json:"accountuuid,omitempty"`
-	TxUUID string `json:"txuuid,omitempty"`
+	TaskUUID string `json:"taskuuid,omitempty"`
 }
 
 type Create struct {
@@ -56,7 +53,8 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 	if _, err = database.GetAccountByAccountID(db, accountid); err == nil {
 		wtLogger.Errorf("failed to create duplicate account %#v", account)
 		res.Status = "error"
-		res.Message = "failed to create duplicate account"
+		res.Message = util.ERROR_BADREQUEST + ": failed to create duplicate account"
+		res.UserUUID = ""
 		return res
 	}
 
@@ -75,109 +73,26 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 		return res
 	}
 
-	//todo: create a task for creating account
-
-	// todo: run these in a goroutine, which could be implemented by cron mechanism and additional task table
-	var peerAddr string
-	if peerAddr = os.Getenv("PEER_ADDRESS"); len(peerAddr) == 0 {
-		wtLogger.Fatal("failed getting environmental variable PEER_ADDRESS")
+	var crontask task.CronTask = new(task.AccountCreateTask)
+	var taskuuid string
+	taskuuid, err = crontask.Create(account.AccountUUID, task.TASK_TYPE_CREATE_ACCOUNT, task.TASK_STATE_INIT)
+	if err != nil {
+		wtLogger.Errorf("failed to create task for createaccount event: %v", err)
 		res.Status = "error"
-		res.Message = "failed getting peer address"
+		res.Message = fmt.Sprintf("failed to create task for createaccount event: %v", err)
+		res.AccountUUID = ""
+		res.TaskUUID = ""
+		account.Status = "failed"
+		database.DeleteAccount(db, account)
 		return res
 	}
 
-	var peerReq = PeerReq{
-		JsonRPC: "2.0",
-		Method: "invoke",
-		Params: Params{
-			Type: 1,
-			ChaincodeID: ChaincodeID{
-				Name:"wallet",
-			},
-			CtorMsg: CtorMsg{
-				Function:"createaccount",
-				Args:[]string{""},
-			},
-			SecureContext:"diego",
-		},
-		ID: 1,
-	}
-
-	peerReq.Params.CtorMsg.Args = []string{
-		account.UserUUID,
-		account.AccountUUID,
-		strconv.FormatInt(int64(account.Amount), 10),
-	}
-	var peerReqBytes []byte
-	if peerReqBytes, err = json.Marshal(peerReq); err != nil {
-		wtLogger.Errorf("failed marshalling createAccount request %#v: %v", peerReq, err)
-		res.Status = "error"
-		res.Message = "failed marshalling createAccount request"
-		return res
-	}
-	wtLogger.Debugf("marshalled createAccount request %#v", string(peerReqBytes))
-	var body = new(bytes.Buffer)
-	fmt.Fprintf(body, "%s", string(peerReqBytes))
-	var peerResp *http.Response = new(http.Response)
-	if peerResp, err = http.Post(peerAddr+"/"+"chaincode", "application/json", body); err != nil {
-		wtLogger.Errorf("failed posting createAccount request %s to peer %s: %v", string(peerReqBytes), peerAddr, err)
-		res.Status = "error"
-		res.Message = "failed posint createAccount request to peer"
-		return res
-	}
-	defer peerResp.Body.Close()
-	// todo: in this phase, status should be set as creating
-
-	// check whether the createaccount transaction uuid (the response from peer) is valid or not
-	// todo: this should be moved out to check
-	var invokeResp InvokeRes
-	if err = json.NewDecoder(peerResp.Body).Decode(&invokeResp); err != nil {
-		wtLogger.Errorf("failed decoding createAccount response from peer: %v", err)
-		res.Status = "error"
-		res.Message = fmt.Sprintf("failed decoding createAccount response from peer: %v", err)
-		return res
-	}
-	wtLogger.Debugf("decoded createAccount response from peer: %#v", invokeResp)
-
-	res.TxUUID = invokeResp.Result.Message
-	if len(res.TxUUID) == 0 {
-		res.Status = "error"
-		res.Message = "failed creating account, bc_txuuid is empty"
-		wtLogger.Error("failed creating account, transaction bc_txuuid is empty")
-		return res
-	}
-
-	// todo: need to figure out a way to cope with the operation delay of peer
-	time.Sleep(time.Second * 3)
-	var txreps *http.Response = new(http.Response)
-	if txreps, err = http.Get(peerAddr + "/" + "transactions" + "/" + res.TxUUID); err != nil {
-		res.Status = "error"
-		res.Message = fmt.Sprintf("failed creating account, transaction bc_txuuid %s not exist: %v", res.TxUUID, err)
-		wtLogger.Errorf("failed creating account, transaction bc_txuuid %s not exist: %v", res.TxUUID, err)
-		return res
-	}
- 	if txreps.StatusCode != http.StatusOK{
-		res.Status = "error"
-		res.Message = fmt.Sprintf("failed creating account, transaction bc_txuuid %s not exist", res.TxUUID)
-		wtLogger.Errorf("failed creating account, transaction bc_txuuid %s not exist", res.TxUUID)
-		return res
-	}
-	defer txreps.Body.Close()
-
-	account.BC_TXUUID = invokeResp.Result.Message
-	account.Status = "created"
-
-	if _, err = database.UpdateAccount(db, account); err != nil {
-		wtLogger.Errorf("failed updating account %#v: %v", account, err)
-		res.Status = "error"
-		res.Message = "failed updating account"
-		return res
-	}
 
 	res.Status = "ok"
 	res.UserUUID = res.UserUUID
-	res.Message = "sucessed in creating account"
+	res.Message = "sucessed in creating task for accountcreate event"
 	res.AccountUUID = account.AccountUUID
+	res.TaskUUID = taskuuid
 	return res
 }
 

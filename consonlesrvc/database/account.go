@@ -167,6 +167,36 @@ func GetAccountByName(db *sql.DB, name string)(*Account, error){
 }
 */
 
+func DeleteAccount(db *sql.DB, u *Account)(int64, error){
+	dbLogger.Debug("DeleteAccount...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE account SET deleted = 1 and status = ? WHERE accountuuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	addResult, err = stmt.Exec(u.Status, u.AccountUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}
+
 func UpdateAccount(db *sql.DB, u *Account)(int64, error){
 	dbLogger.Debug("UpdateAccount...")
 	var err error

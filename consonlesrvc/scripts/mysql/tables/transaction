@@ -9,6 +9,7 @@ CREATE TABLE transaction (
     bc_txuuid VARCHAR(36) DEFAULT "" COMMENT 'blockchain transaction uuid for invoking chaincode function',
     bc_blocknum BIGINT ZEROFILL DEFAULT 0 COMMENT 'the block number in the blockchain as a result of invoking chaincode function',
     status VARCHAR(20) DEFAULT "pending",
+    deleted TINYINT UNSIGNED ZEROFILL NOT NULL DEFAULT 0,
     insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),

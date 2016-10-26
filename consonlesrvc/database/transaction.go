@@ -62,7 +62,7 @@ func GetTransaction(db *sql.DB, txuuid string)(*Transaction, error){
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction WHERE txuuid = ?")
+	stmt, err = db.Prepare("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction WHERE txuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return nil, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -90,7 +90,7 @@ func GetTransactionsByPayeruuid(db *sql.DB, payeruuid string)([]*Transaction, er
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeruuid = ?", &payeruuid); err != nil {
+	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeruuid = ? and deleted = 0", &payeruuid); err != nil {
 		dbLogger.Errorf("Failed getting transactions by payeruuid %s : %v", payeruuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -124,7 +124,7 @@ func GetTransactionsByPayeeuuid(db *sql.DB, payeeuuid string)([]*Transaction, er
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeeuuid = ?", &payeeuuid); err != nil {
+	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeeuuid = ? and deleted = 0", &payeeuuid); err != nil {
 		dbLogger.Errorf("Failed getting transactions by payeeuuid %s : %v", payeeuuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -167,6 +167,36 @@ func UpdateTransaction(db *sql.DB, t *Transaction)(int64, error){
 	defer stmt.Close()
 
 	addResult, err = stmt.Exec(t.BC_txuuid, t.BC_blocknum, t.Status, t.TxUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}
+
+func DeleteTransaction(db *sql.DB, t *Transaction)(int64, error){
+	dbLogger.Debug("UpdateTransaction...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE transaction SET deleted = 1 and status = ? WHERE txuuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	addResult, err = stmt.Exec(t.Status, t.TxUUID)
 	if err != nil {
 		dbLogger.Errorf("Failed executing statement:  %v", err)
 		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
