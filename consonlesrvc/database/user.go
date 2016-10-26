@@ -71,3 +71,61 @@ func GetUserByName(db *sql.DB, name string) (*User, error) {
 
 	return user, nil
 }
+
+func GetUser(db *sql.DB, useruuid string) (*User, error) {
+	dbLogger.Debug("GetUser...")
+	var user = new(User)
+	var err error
+	var stmt *sql.Stmt
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("SELECT rowid, useruuid, password, username FROM user WHERE useruuid = ? and deleted = 0")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return nil, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	if err := stmt.QueryRow(useruuid).Scan(&user.RowID, &user.UserUUID, &user.Password, &user.Username); err != nil {
+		dbLogger.Errorf("Failed getting user %s: %v", useruuid, err)
+		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
+	}
+	dbLogger.Debugf("Get user %s: \n%+v", useruuid, *user)
+
+	return user, nil
+}
+
+
+func DeleteUser(db *sql.DB, u *User)(int64, error){
+	dbLogger.Debug("DeleteAccount...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE user SET deleted = 1 WHERE useruuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+
+	addResult, err = stmt.Exec(u.UserUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}

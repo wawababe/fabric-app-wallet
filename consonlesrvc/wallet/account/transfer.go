@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	util "baas/app-wallet/consonlesrvc/common"
-	"baas/app-wallet/consonlesrvc/wallet/task"
+	"baas/app-wallet/consonlesrvc/wallet/crontask"
 )
 
 type TransferRequest struct {
@@ -99,9 +99,9 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 		return res
 	}
 
-	var crontask task.CronTask = new(task.AccountTransferTask)
+	var task crontask.CronTask = new(crontask.AccountTransferTask)
 	var taskuuid string
-	taskuuid, err = crontask.Create(tx.TxUUID, task.TASK_TYPE_TRANSFER, task.TASK_STATE_INIT)
+	taskuuid, err = task.Create(tx.TxUUID, crontask.TASK_TYPE_TRANSFER, crontask.TASK_STATE_INIT)
 	if err != nil {
 		wtLogger.Errorf("failed to create task for createaccount event: %v", err)
 		res.Status = "error"

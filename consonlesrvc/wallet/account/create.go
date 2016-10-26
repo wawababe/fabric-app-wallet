@@ -11,7 +11,7 @@ import (
 	"baas/app-wallet/consonlesrvc/database"
 	util "baas/app-wallet/consonlesrvc/common"
 	"strings"
-	"baas/app-wallet/consonlesrvc/wallet/task"
+	"baas/app-wallet/consonlesrvc/wallet/crontask"
 )
 
 type CreateRequest struct {
@@ -73,9 +73,9 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 		return res
 	}
 
-	var crontask task.CronTask = new(task.AccountCreateTask)
+	var task crontask.CronTask = new(crontask.AccountCreateTask)
 	var taskuuid string
-	taskuuid, err = crontask.Create(account.AccountUUID, task.TASK_TYPE_CREATE_ACCOUNT, task.TASK_STATE_INIT)
+	taskuuid, err = task.Create(account.AccountUUID, crontask.TYPE_CREATE_ACCOUNT, crontask.STATE_INIT)
 	if err != nil {
 		wtLogger.Errorf("failed to create task for createaccount event: %v", err)
 		res.Status = "error"
