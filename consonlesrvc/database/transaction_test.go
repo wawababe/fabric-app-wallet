@@ -20,6 +20,8 @@ func TestAddTransaction(t *testing.T) {
 		trans[i].TXUUID = util.GenerateUUID()
 		trans[i].PayerUUID = util.GenerateUUID()
 		trans[i].PayeeUUID = util.GenerateUUID()
+		trans[i].PayerAccount = util.GenerateUUID()
+		trans[i].PayeeAccount = util.GenerateUUID()
 		trans[i].Amount = 30
 		trans[i].Status = "pending"
 		dbLogger.Debugf("transaction: %#v", trans[i])
@@ -55,10 +57,10 @@ func TestGetTransactionByTransUUID(t *testing.T) {
 
 	var txuuid string
 	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
-	txuuid = "7382e24f-bd1c-4e41-ab86-e819e823b75b"
+	txuuid = "4b264cf2-deaf-496d-8eb9-49ee39044e6e"
 	us, err = GetTransaction(db, txuuid)
 	if us == nil || err != nil{
-		t.Errorf("Failed retrieving transaction")
+		t.Error("Failed retrieving transaction")
 	}
 	dbLogger.Debugf("Get transaction: %#v", *us)
 }
@@ -91,10 +93,10 @@ func TestUpdateTransaction(t *testing.T) {
 
 	var txuuid string
 	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
-	txuuid = "7382e24f-bd1c-4e41-ab86-e819e823b75b"
+	txuuid = "4b264cf2-deaf-496d-8eb9-49ee39044e6e"
 	us, err = GetTransaction(db, txuuid)
 	if us == nil || err != nil{
-		t.Errorf("Failed retrieving transaction")
+		t.Error("Failed retrieving transaction")
 	}
 	dbLogger.Debugf("Get transaction: %#v", *us)
 

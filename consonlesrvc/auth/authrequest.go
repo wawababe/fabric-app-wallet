@@ -15,7 +15,7 @@ type AuthRequest struct {
 
 type AuthResponse struct {
 	common.BaseResponse
-	UserUUID string `json:"useruuid"`
+	UserUUID string `json:"useruuid,omitempty"`
 }
 
 //IsAuthRequestValid: check whether request req is valid; set the response res

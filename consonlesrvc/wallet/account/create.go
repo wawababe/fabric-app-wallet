@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"strconv"
 	"time"
+	"strings"
 )
 
 type CreateRequest struct {
@@ -23,8 +24,8 @@ type CreateRequest struct {
 
 type CreateResponse struct {
 	authsrvc.AuthResponse
-	AccountUUID string `json:"accountuuid"`
-	TxUUID string `json:"txuuid"`
+	AccountUUID string `json:"accountuuid,omitempty"`
+	TxUUID string `json:"txuuid,omitempty"`
 }
 
 type Create struct {
@@ -37,21 +38,32 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 
 	if !req.IsRequestValid(&res.AuthResponse) {
 		wtLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
+		res.UserUUID = ""
+		return res
+	}
+	if len(req.AccountName) == 0 {
+		wtLogger.Warning("account name should not be empty")
+		res.Status = "error"
+		res.Message = util.ERROR_BADREQUEST +": account name should not be empty"
 		res.UserUUID = ""
 		return res
 	}
 
 	var account *database.Account = new(database.Account)
-	if _, err = database.GetAccountByName(db, res.UserUUID + "-" + req.AccountName); err == nil {
+	var accountid = util.MD5string(res.UserUUID + req.AccountName)
+	if _, err = database.GetAccountByAccountID(db, accountid); err == nil {
 		wtLogger.Errorf("failed to create duplicate account %#v", account)
 		res.Status = "error"
 		res.Message = "failed to create duplicate account"
 		return res
 	}
 
-	account.UserUUID = res.UserUUID
 	account.AccountUUID = util.GenerateUUID()
-	account.AccountName = res.UserUUID + "-" + req.AccountName
+	account.UserUUID = res.UserUUID
+	account.AccountName = req.AccountName
+	account.AccountID = accountid
 	account.Amount = 1000
 	account.BC_TXUUID = ""
 	account.Status = "pending"
@@ -62,6 +74,8 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 		res.Message = "failed adding account"
 		return res
 	}
+
+	//todo: create a task for creating account
 
 	// todo: run these in a goroutine, which could be implemented by cron mechanism and additional task table
 	var peerAddr string
@@ -134,7 +148,7 @@ func (c *Create) post(req *CreateRequest)(*CreateResponse){
 	}
 
 	// todo: need to figure out a way to cope with the operation delay of peer
-	time.Sleep(time.Second * 4)
+	time.Sleep(time.Second * 3)
 	var txreps *http.Response = new(http.Response)
 	if txreps, err = http.Get(peerAddr + "/" + "transactions" + "/" + res.TxUUID); err != nil {
 		res.Status = "error"
@@ -191,6 +205,11 @@ func AccountCreatePost(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	resBytes, err = json.Marshal(*res)
 	if err != nil {
 		wtLogger.Fatalf("failed to marshal response as []byte: %v", err)
+	}
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
 	}
 	fmt.Fprintf(w, "%s", string(resBytes))
 }

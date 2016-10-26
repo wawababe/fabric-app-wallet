@@ -19,8 +19,8 @@ type SignupRequest struct {
 
 type SignupResponse struct {
 	common.BaseResponse
-	Session string `json:"sessionid"`
-	AuthToken string `json:"authtoken"`
+	Session string `json:"sessionid,omitempty"`
+	AuthToken string `json:"authtoken,omitempty"`
 }
 
 type Signup struct {

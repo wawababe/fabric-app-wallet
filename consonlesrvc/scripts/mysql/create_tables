@@ -4,7 +4,7 @@
 
 HOSTNAME="localhost"
 USERNAME="bcapp"
-PASSWORD=""
+PASSWORD="DTXa9ytsNXpSEFuu6CPWc3ZxMcGiTpBq66mYyk9WYlI="
 
 BATCH_FILE=`mktemp batchfile.XXXXXX`
 echo "use app_wallet;" > $BATCH_FILE
@@ -13,6 +13,7 @@ for i in `ls tables`
 do
   if [ -f tables/$i ]
   then
+    echo "processing table $i"
     cat tables/$i >> $BATCH_FILE
   fi
 done

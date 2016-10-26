@@ -16,8 +16,8 @@ type TransactionListRequest struct {
 
 type TransactionListResponse struct {
 	authsrvc.AuthResponse
-	PayerTransactionList []*database.Transaction `json:"payertransactionlist"`
-	PayeeTransactionList []*database.Transaction `json:"payeetransactionlist"`
+	PayerTransactionList []*database.Transaction `json:"payertransactionlist,omitempty"`
+	PayeeTransactionList []*database.Transaction `json:"payeetransactionlist,omitempty"`
 }
 
 type TransactionList struct {

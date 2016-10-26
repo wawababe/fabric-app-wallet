@@ -3,6 +3,7 @@ package common
 import (
 	"crypto/sha1"
 	"fmt"
+	"crypto/md5"
 )
 
 func SHA1string(s string)(string){
@@ -12,4 +13,9 @@ func SHA1string(s string)(string){
 
 func GenSessionToken(useruuid, sessionuuid, password string)string {
 	return SHA1string(useruuid + sessionuuid + password)
+}
+
+func MD5string(s string)(string){
+	digestbyte := md5.Sum([]byte(s))
+	return fmt.Sprintf("%x", digestbyte)
 }

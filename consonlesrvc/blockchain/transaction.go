@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"fmt"
 	"os"
+	"strings"
+	util "baas/app-wallet/consonlesrvc/common"
 )
 
 type TransactionDetailRequest struct {
@@ -29,6 +31,14 @@ func (t *TransactionDetail) post(req *TransactionDetailRequest)(*TransactionDeta
 
 	if !req.IsRequestValid(&res.AuthResponse) {
 		bcLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
+		res.UserUUID = ""
+		return res
+	}
+	if len(req.BC_TXUUID) == 0 {
+		res.Status = "error"
+		res.Message = util.ERROR_BADREQUEST + fmt.Sprint(": blockchain transaction uuid should not be empty")
 		res.UserUUID = ""
 		return res
 	}
@@ -54,7 +64,7 @@ func (t *TransactionDetail) post(req *TransactionDetailRequest)(*TransactionDeta
 	if peerResp.StatusCode == http.StatusNotFound {
 		bcLogger.Errorf("transaction %s not exist in the blockchain", req.BC_TXUUID)
 		res.Status = "error"
-		res.Message = fmt.Sprintf("transaction %s not exist in the blockchain", req.BC_TXUUID)
+		res.Message = util.ERROR_NOTFOUND + fmt.Sprintf(": transaction %s not exist in the blockchain", req.BC_TXUUID)
 		return res
 	}
 
@@ -94,6 +104,17 @@ func TransactionDetailPost(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 	var t TransactionDetail
 	res = t.post(req)
+
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
+	}else if strings.Contains(res.Message, util.ERROR_NOTFOUND){
+		w.WriteHeader(http.StatusNotFound)
+	}else if res.Status == "error"{
+		w.WriteHeader(http.StatusNotFound)
+	}
+
 
 	resBytes, err = json.Marshal(*res)
 	if err != nil {

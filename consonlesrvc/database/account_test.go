@@ -19,8 +19,9 @@ func TestAddAccount(t *testing.T) {
 	for i, _ := range accounts {
 		accounts[i].AccountUUID = util.GenerateUUID()
 		accounts[i].UserUUID = util.GenerateUUID()
-		accounts[i].Amount = 200
-		accounts[i].AccountName = accounts[i].AccountUUID
+		accounts[i].AccountName = "lolshi"
+		accounts[i].AccountID = util.MD5string(accounts[i].UserUUID + accounts[i].AccountName)
+		accounts[i].Amount = 2000
 		accounts[i].BC_TXUUID = ""
 		accounts[i].Status = "pending"
 		dbLogger.Debugf("user account: %#v", accounts[i])
@@ -48,7 +49,7 @@ func TestAddAccount(t *testing.T) {
 }
 
 
-func TestGetAccountByUserUUID(t *testing.T) {
+func TestGetAccount(t *testing.T) {
 	var db *sql.DB
 	var err error
 	var us *Account
@@ -56,10 +57,10 @@ func TestGetAccountByUserUUID(t *testing.T) {
 		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
 	}
 
-	var useruuid, accountuuid string
-	useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
+	var accountuuid string
+	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
 	accountuuid = "b7e97e66-dba8-4cf7-af2f-fe17ee7e7c03"
-	us, err = GetAccount(db, useruuid, accountuuid)
+	us, err = GetAccount(db, accountuuid)
 	if us == nil || err != nil{
 		t.Errorf("Failed retrieving user account: %v", err)
 		return
@@ -67,6 +68,7 @@ func TestGetAccountByUserUUID(t *testing.T) {
 	dbLogger.Debugf("Get user account: %#v", *us)
 }
 
+/*
 func TestGetAccountByName(t *testing.T) {
 	var db *sql.DB
 	var err error
@@ -85,6 +87,7 @@ func TestGetAccountByName(t *testing.T) {
 	dbLogger.Debugf("Get user account: %#v", *us)
 
 }
+*/
 
 func TestGetAccountsByUseruuid(t *testing.T) {
 	var db *sql.DB
@@ -113,12 +116,12 @@ func TestUpdateAccount(t *testing.T) {
 		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
 	}
 
-	var useruuid, accountuuid string
-	useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
+	var accountuuid string
+	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
 	accountuuid = "b7e97e66-dba8-4cf7-af2f-fe17ee7e7c03"
-	us, err = GetAccount(db, useruuid, accountuuid)
-	if us == nil || err != nil{
-		t.Error("Failed retrieving user account: %v", err)
+	us, err = GetAccount(db, accountuuid)
+/*	if us == nil || err != nil{
+		t.Errorf("Failed retrieving user account: %v", err)
 	}
 	dbLogger.Debugf("Get user account: %#v", *us)
 
@@ -129,7 +132,7 @@ func TestUpdateAccount(t *testing.T) {
 	if affectedrows != 1 {
 		t.Errorf("Failed updating account to %v\n err: %v", *us, err)
 	}
-
+*/
 	dbLogger.Debugf("Updated user account: %#v", *us)
 
 

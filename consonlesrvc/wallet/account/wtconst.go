@@ -33,3 +33,4 @@ type InvokeRes struct {
 	Result util.BaseResponse `json:"result"`
 	ID int `json:"id"`
 }
+

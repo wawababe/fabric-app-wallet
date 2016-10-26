@@ -1,0 +1,18 @@
+CREATE TABLE task (
+    rowid BIGINT NOT NULL AUTO_INCREMENT,
+    taskuuid VARCHAR(36) NOT NULL,
+    useruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
+    keyword VARCHAR(36) COMMENT 'count on task type, if it is createaccount event, then it is accountuuid; else if it is transfer event, then it is txuuid',
+    bc_txuuid VARCHAR(36) DEFAULT "",
+    type VARCHAR(20) DEFAULT "",
+    state VARCHAR(20) DEFAULT "pending",
+    payload JSON, 
+    deleted TINYINT UNSIGNED ZEROFILL NOT NULL DEFAULT 0,
+    insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (rowid),
+    UNIQUE KEY (taskuuid),
+    INDEX USING BTREE (taskuuid),
+    INDEX type_state_index USING BTREE (type, state),
+    INDEX keyword_type_state USING BTREE (keyword, type, state)
+    );

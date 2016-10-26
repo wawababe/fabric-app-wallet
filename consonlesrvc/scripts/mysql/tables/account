@@ -2,8 +2,9 @@ CREATE TABLE account (
     rowid BIGINT NOT NULL AUTO_INCREMENT,
     accountuuid VARCHAR(36),
     useruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
+    accountname VARCHAR(255) NOT NULL,
+    accountid VARCHAR(32) COMMENT 'MD5(USERUUID+ACCOUNTNAME)',
     amount BIGINT,
-    accountname VARCHAR(255),
     bc_txuuid VARCHAR(36) DEFAULT "",
     status VARCHAR(20) DEFAULT "pending",
     deleted TINYINT UNSIGNED ZEROFILL DEFAULT 0,
@@ -11,6 +12,8 @@ CREATE TABLE account (
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),
     UNIQUE KEY (accountuuid),
-    UNIQUE KEY (accountname),
-    INDEX USING BTREE (useruuid)
+    UNIQUE KEY (accountid),
+    INDEX USING BTREE (useruuid),
+    INDEX USING BTREE (accountuuid),
+    INDEX accountid_index USING BTREE (accountid)
     );

@@ -1,11 +1,13 @@
 CREATE TABLE usersession (
     rowid BIGINT NOT NULL AUTO_INCREMENT,
-    sessionuuid VARCHAR(36),
+    sessionuuid VARCHAR(36) NOT NULL,
     useruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
     expiredAt DATETIME,
     deleted  TINYINT UNSIGNED ZEROFILL DEFAULT 0,
     insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),
-    UNIQUE KEY (sessionuuid)
+    UNIQUE KEY (sessionuuid),
+    INDEX usersession_useruuid_index USING BTREE (useruuid),
+    INDEX usersession_sessionuuid_index USING BTREE (sessionuuid)
     );

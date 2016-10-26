@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"baas/app-wallet/consonlesrvc/database"
 	"database/sql"
+	util "baas/app-wallet/consonlesrvc/common"
+	"strings"
 )
 
 type RefreshRequest struct {
@@ -29,6 +31,8 @@ func (t *Refresh) post(req *RefreshRequest) *RefreshResponse {
 
 	if !req.IsRequestValid(&res.AuthResponse) {
 		authLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
 		res.UserUUID = ""
 		return res
 	}
@@ -37,7 +41,7 @@ func (t *Refresh) post(req *RefreshRequest) *RefreshResponse {
 	if session, err = database.GetUserSession(db, res.UserUUID, req.SessionID); err != nil {
 		authLogger.Errorf("failed to refresh, can't getusersession by useruuid %s and sessionuuid %s", res.UserUUID, req.SessionID)
 		res.Status = "error"
-		res.Message = "failed to refresh, can't getusersession"
+		res.Message = util.ERROR_UNAUTHORIZED + ": usersession not exist"
 		return res
 	}
 
@@ -75,5 +79,12 @@ func RefreshPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	if err != nil {
 		authLogger.Fatalf("failed to marshal response as []byte: %v", err)
 	}
+
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	fmt.Fprintf(w, "%s", string(resBytes))
 }

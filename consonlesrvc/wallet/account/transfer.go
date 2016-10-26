@@ -12,19 +12,20 @@ import (
 	"bytes"
 	"os"
 	"time"
-	"github.com/hyperledger/fabric/core/util"
+	"strings"
+	util "baas/app-wallet/consonlesrvc/common"
 )
 
 type TransferRequest struct {
 	authsrvc.AuthRequest
-	PayerAccountName string `json:"payeraccountname"`
-	PayeeAccountName string `json:"payeeaccountname"`
+	PayerAccountID string `json:"payeraccountid"`
+	PayeeAccountID string `json:"payeeaccountid"`
 	Amount int64
 }
 
 type TransferResponse struct {
 	authsrvc.AuthResponse
-	TxUUID string `json:"txuuid"`
+	TxUUID string `json:"txuuid,omitempty"`
 }
 
 
@@ -39,26 +40,35 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 
 	if !req.IsRequestValid(&res.AuthResponse) {
 		wtLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
 		res.UserUUID = ""
 		return res
 	}
 
 	var payerAccount *database.Account = new(database.Account)
 	var payeeAccount *database.Account = new(database.Account)
-	if payerAccount, err = database.GetAccountByName(db, req.PayerAccountName); err != nil {
-		wtLogger.Errorf("failed to get payer account by name", req.PayerAccountName)
+	if payerAccount, err = database.GetAccountByAccountID(db, req.PayerAccountID); err != nil {
+		wtLogger.Errorf("failed to get payer account by accountid", req.PayerAccountID)
 		res.Status = "error"
-		res.Message = "failed to get payer account by name"
+		res.Message = util.ERROR_BADREQUEST + fmt.Sprintf(": failed to get payer account by accountid %s", req.PayerAccountID)
+		return res
+	}
+	if !strings.EqualFold(res.UserUUID, payerAccount.UserUUID) {
+		wtLogger.Errorf("failed to validate, user %s with useruuid %s not have account %#v", req.Username, res.UserUUID, payerAccount)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED + fmt.Sprintf(": request not valid, user %s not hava account %s", req.Username, req.PayerAccountID)
 		return res
 	}
 
-	if payeeAccount, err = database.GetAccountByName(db, req.PayeeAccountName); err != nil {
-		wtLogger.Errorf("failed to get payee account by name", req.PayeeAccountName)
+	if payeeAccount, err = database.GetAccountByAccountID(db, req.PayeeAccountID); err != nil {
+		wtLogger.Errorf("failed to get payee account %s: %v", req.PayeeAccountID, err)
 		res.Status = "error"
-		res.Message = "failed to get payee account by name"
+		res.Message = util.ERROR_BADREQUEST + fmt.Sprintf(": failed to get payee account %s", req.PayeeAccountID)
 		return res
 	}
 
+	// todo: should not check, this should be done by chaincode
 	if payerAccount.Amount < req.Amount {
 		wtLogger.Errorf("failed to pay, payer's account only has %d, not enough to pay %d", payerAccount.Amount, req.Amount)
 		res.Status = "error"
@@ -68,9 +78,11 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 
 
 	var tx *database.Transaction = new(database.Transaction)
-	tx.TXUUID = util.GenerateUUID()
-	tx.PayerUUID = payerAccount.AccountUUID
-	tx.PayeeUUID = payeeAccount.AccountUUID
+	tx.TxUUID = util.GenerateUUID()
+	tx.PayerUUID = payerAccount.UserUUID
+	tx.PayeeUUID = payeeAccount.UserUUID
+	tx.PayerAccountID = payerAccount.AccountID
+	tx.PayeeAccountID = payeeAccount.AccountID
 	tx.Amount = req.Amount
 	tx.Status = "pending"
 
@@ -81,6 +93,8 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 		res.Message = "failed adding transaction"
 		return res
 	}
+
+	// todo: add a task for account transfer
 
 	// todo: run these in a goroutine, which could be implemented by cron mechanism and additional task table
 	var peerAddr string
@@ -109,9 +123,9 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 	}
 
 	peerReq.Params.CtorMsg.Args = []string{
-		tx.TXUUID,
-		tx.PayerUUID,
-		tx.PayeeUUID,
+		tx.TxUUID,
+		payerAccount.AccountUUID,
+		payeeAccount.AccountUUID,
 		strconv.FormatInt(int64(tx.Amount), 10),
 	}
 	var peerReqBytes []byte
@@ -200,7 +214,7 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 	res.Status = "ok"
 	res.UserUUID = res.UserUUID
 	res.Message = "sucessed in creating account"
-	res.TxUUID = tx.TXUUID
+	res.TxUUID = tx.TxUUID
 	return res
 }
 
@@ -220,8 +234,8 @@ func TransferPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	req.Username = r.PostForm.Get("username")
 	req.SessionID = r.PostForm.Get("sessionid")
 	req.AuthToken = r.PostForm.Get("authtoken")
-	req.PayerAccountName = r.PostForm.Get("payeraccountname")
-	req.PayeeAccountName = r.PostForm.Get("payeeaccountname")
+	req.PayerAccountID = r.PostForm.Get("payeraccountid")
+	req.PayeeAccountID = r.PostForm.Get("payeeaccountid")
 	req.Amount, _ = strconv.ParseInt(r.PostForm.Get("amount"), 10, 64)
 	/*; err != nil {
 		res.Status = "error"
@@ -237,6 +251,11 @@ func TransferPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
 	resBytes, err = json.Marshal(*res)
 	if err != nil {
 		wtLogger.Fatalf("failed to marshal response as []byte: %v", err)
+	}
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
 	}
 	fmt.Fprintf(w, "%s", string(resBytes))
 }

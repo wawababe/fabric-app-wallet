@@ -3,14 +3,18 @@ CREATE TABLE transaction (
     txuuid VARCHAR(36) COMMENT 'transaction uuid',
     payeruuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
     payeeuuid VARCHAR(36) REFERENCES user (useruuid) MATCH FULL,
+    payeraccountid VARCHAR(32) REFERENCES account (accountid) MATCH FULL,
+    payeeaccountid VARCHAR(32) REFERENCES account (accountid) MATCH FULL,
     amount BIGINT,
-    bc_txuuid VARCHAR(36) COMMENT 'blockchain transaction uuid for invoking chaincode function',
-    bc_blocknum BIGINT COMMENT 'the block number in the blockchain as a result of invoking chaincode function',
-    status VARCHAR(20),
+    bc_txuuid VARCHAR(36) DEFAULT "" COMMENT 'blockchain transaction uuid for invoking chaincode function',
+    bc_blocknum BIGINT ZEROFILL DEFAULT 0 COMMENT 'the block number in the blockchain as a result of invoking chaincode function',
+    status VARCHAR(20) DEFAULT "pending",
     insertedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (rowid),
     UNIQUE KEY (txuuid),
     INDEX payer_index USING BTREE (payeruuid),
-    INDEX payee_index USING BTREE (payeeuuid)
+    INDEX payee_index USING BTREE (payeeuuid),
+    INDEX payeraccountid_index USING BTREE (payeraccountid),
+    INDEX payeeaccountid_index USING BTREE (payeeaccountid)
     );

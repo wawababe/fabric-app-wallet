@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"database/sql"
 	"baas/app-wallet/consonlesrvc/database"
+	util "baas/app-wallet/consonlesrvc/common"
+	"strings"
 )
 
 type LogoutRequest struct{
@@ -29,6 +31,8 @@ func (t *Logout) post(req *LogoutRequest) *LogoutResponse {
 	var authRes *AuthResponse = new(AuthResponse)
 	if !req.IsRequestValid(&res.AuthResponse) {
 		authLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
 		res.UserUUID = ""
 		return res
 	}
@@ -69,6 +73,11 @@ func LogoutPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
 	resBytes, err = json.Marshal(*res)
 	if err != nil {
 		authLogger.Fatalf("failed to marshal response as []byte: %v", err)
+	}
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
 	}
 	fmt.Fprintf(w, "%s", string(resBytes))
 }

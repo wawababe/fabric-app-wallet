@@ -4,10 +4,12 @@ import (
 	"baas/app-wallet/consonlesrvc/auth"
 	"baas/app-wallet/consonlesrvc/database"
 	"github.com/julienschmidt/httprouter"
+	util "baas/app-wallet/consonlesrvc/common"
 	"encoding/json"
 	"database/sql"
 	"net/http"
 	"fmt"
+	"strings"
 )
 
 type AccountListRequest struct {
@@ -16,7 +18,7 @@ type AccountListRequest struct {
 
 type AccountListResponse struct {
 	authsrvc.AuthResponse
-	AccountList []*database.Account `json:"accountlist"`
+	AccountList []*database.Account `json:"accountlist,omitempty"`
 }
 
 type AccountList struct {
@@ -30,6 +32,8 @@ func (c *AccountList) post(req *AccountListRequest)(*AccountListResponse){
 
 	if !req.IsRequestValid(&res.AuthResponse) {
 		wtLogger.Warningf("request not valid: %#v", *req)
+		res.Status = "error"
+		res.Message = util.ERROR_UNAUTHORIZED
 		res.UserUUID = ""
 		return res
 	}
@@ -70,6 +74,11 @@ func AccountListPost(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	resBytes, err = json.Marshal(*res)
 	if err != nil {
 		wtLogger.Fatalf("failed to marshal response as []byte: %v", err)
+	}
+	if strings.Contains(res.Message, util.ERROR_UNAUTHORIZED){
+		w.WriteHeader(http.StatusUnauthorized)
+	}else if strings.Contains(res.Message, util.ERROR_BADREQUEST){
+		w.WriteHeader(http.StatusBadRequest)
 	}
 	fmt.Fprintf(w, "%s", string(resBytes))
 }

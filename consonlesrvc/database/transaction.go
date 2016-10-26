@@ -7,17 +7,19 @@ import (
 )
 
 type Transaction struct {
-	RowID int64
-	TXUUID string
-	PayerUUID string //payer account uuid
-	PayeeUUID string //payee account uuid
-	Amount int64
-	BC_txuuid string
-	BC_blocknum int64
-	Status string //pending, fin, failed
+	RowID int64 `json:"rowid"`
+	TxUUID string `json:"txuuid"`
+	PayerUUID string `json:"payeruuid"` //payer's useruuid
+	PayeeUUID string `json:"payeeuuid"` //payee's useruuid
+	PayerAccountID string `json:"payeraccountid"`//payer accountid
+	PayeeAccountID string `json:"payeeaccountid"`//payee accountid
+	Amount int64 `json:"amount"`
+	BC_txuuid string `json:"bc_txuuid"`
+	BC_blocknum int64 `json:"bc_blocknum"`
+	Status string `json:"status"`//pending, fin, failed
 }
 
-func AddTransaction(db *sql.DB, u *Transaction)(int64, error){
+func AddTransaction(db *sql.DB, t *Transaction)(int64, error){
 	dbLogger.Debug("AddTransaction...")
 	var err error
 	var stmt *sql.Stmt
@@ -29,14 +31,14 @@ func AddTransaction(db *sql.DB, u *Transaction)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("INSERT INTO transaction(txuuid, payeruuid, payeeuuid, amount, bc_txuuid, bc_blocknum, status) VALUES(?, ?, ?, ?, ?, ?, ?)")
+	stmt, err = db.Prepare("INSERT INTO transaction(txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
 	}
 	defer stmt.Close()
 
-	addResult, err = stmt.Exec(u.TXUUID, u.PayerUUID, u.PayeeUUID, u.Amount, u.BC_txuuid, u.BC_blocknum, u.Status)
+	addResult, err = stmt.Exec(t.TxUUID, t.PayerUUID, t.PayeeUUID, t.PayerAccountID, t.PayeeAccountID, t.Amount, t.BC_txuuid, t.BC_blocknum, t.Status)
 	if err != nil {
 		dbLogger.Errorf("Failed executing statement:  %v", err)
 		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
@@ -60,14 +62,14 @@ func GetTransaction(db *sql.DB, txuuid string)(*Transaction, error){
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("SELECT rowid, txuuid, payeruuid, payeeuuid, amount, bc_txuuid, bc_blocknum, status FROM transaction WHERE txuuid = ?")
+	stmt, err = db.Prepare("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction WHERE txuuid = ?")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return nil, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
 	}
 	defer stmt.Close()
 
-	if err := stmt.QueryRow(txuuid).Scan(&tx.RowID, &tx.TXUUID, &tx.PayerUUID, &tx.PayeeUUID, &tx.Amount, &tx.BC_txuuid, &tx.BC_blocknum, &tx.Status); err != nil {
+	if err := stmt.QueryRow(txuuid).Scan(&tx.RowID, &tx.TxUUID, &tx.PayerUUID, &tx.PayeeUUID, &tx.PayerAccountID, &tx.PayeeAccountID, &tx.Amount, &tx.BC_txuuid, &tx.BC_blocknum, &tx.Status); err != nil {
 		dbLogger.Errorf("Failed getting transaction by txuuid %s: %v", txuuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -88,7 +90,7 @@ func GetTransactionsByPayeruuid(db *sql.DB, payeruuid string)([]*Transaction, er
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	if rows, err = db.Query("SELECT transaction.rowid, txuuid, payeruuid, payeeuuid, transaction.amount, transaction.bc_txuuid, bc_blocknum, transaction.status FROM transaction INNER JOIN account ON transaction.payeruuid = account.accountuuid where useruuid = ?", &payeruuid); err != nil {
+	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeruuid = ?", &payeruuid); err != nil {
 		dbLogger.Errorf("Failed getting transactions by payeruuid %s : %v", payeruuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -99,10 +101,10 @@ func GetTransactionsByPayeruuid(db *sql.DB, payeruuid string)([]*Transaction, er
 
 	for rows.Next() {
 		var t *Transaction = new(Transaction)
-		if err := rows.Scan(&t.RowID, &t.TXUUID, &t.PayerUUID, &t.PayeeUUID, &t.Amount, &t.BC_txuuid, &t.BC_blocknum, &t.Status); err != nil {
+		if err := rows.Scan(&t.RowID, &t.TxUUID, &t.PayerUUID, &t.PayeeUUID, &t.PayerAccountID, &t.PayeeAccountID, &t.Amount, &t.BC_txuuid, &t.BC_blocknum, &t.Status); err != nil {
 			dbLogger.Fatal(err)
 		}
-		dbLogger.Debugf("useruuid %s has transaction: %#v", payeruuid, *t)
+		dbLogger.Debugf("payer %s has transaction: %#v", payeruuid, *t)
 		txs = append(txs, t)
 	}
 
@@ -122,7 +124,7 @@ func GetTransactionsByPayeeuuid(db *sql.DB, payeeuuid string)([]*Transaction, er
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	if rows, err = db.Query("SELECT transaction.rowid, txuuid, payeruuid, payeeuuid, transaction.amount, transaction.bc_txuuid, bc_blocknum, transaction.status FROM transaction INNER JOIN account ON transaction.payeeuuid = account.accountuuid where useruuid = ?", &payeeuuid); err != nil {
+	if rows, err = db.Query("SELECT rowid, txuuid, payeruuid, payeeuuid, payeraccountid, payeeaccountid, amount, bc_txuuid, bc_blocknum, status FROM transaction where payeeuuid = ?", &payeeuuid); err != nil {
 		dbLogger.Errorf("Failed getting transactions by payeeuuid %s : %v", payeeuuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -133,10 +135,10 @@ func GetTransactionsByPayeeuuid(db *sql.DB, payeeuuid string)([]*Transaction, er
 
 	for rows.Next() {
 		var t *Transaction = new(Transaction)
-		if err := rows.Scan(&t.RowID, &t.TXUUID, &t.PayerUUID, &t.PayeeUUID, &t.Amount, &t.BC_txuuid, &t.BC_blocknum, &t.Status); err != nil {
+		if err := rows.Scan(&t.RowID, &t.TxUUID, &t.PayerUUID, &t.PayeeUUID, &t.PayerAccountID, &t.PayeeAccountID, &t.Amount, &t.BC_txuuid, &t.BC_blocknum, &t.Status); err != nil {
 			dbLogger.Fatal(err)
 		}
-		dbLogger.Debugf("useruuid %s has transaction: %#v", payeeuuid, *t)
+		dbLogger.Debugf("payee %s has transaction: %#v", payeeuuid, *t)
 		txs = append(txs, t)
 	}
 
@@ -145,7 +147,7 @@ func GetTransactionsByPayeeuuid(db *sql.DB, payeeuuid string)([]*Transaction, er
 
 }
 
-func UpdateTransaction(db *sql.DB, u *Transaction)(int64, error){
+func UpdateTransaction(db *sql.DB, t *Transaction)(int64, error){
 	dbLogger.Debug("UpdateTransaction...")
 	var err error
 	var stmt *sql.Stmt
@@ -164,7 +166,7 @@ func UpdateTransaction(db *sql.DB, u *Transaction)(int64, error){
 	}
 	defer stmt.Close()
 
-	addResult, err = stmt.Exec(u.BC_txuuid, u.BC_blocknum, u.Status, u.TXUUID)
+	addResult, err = stmt.Exec(t.BC_txuuid, t.BC_blocknum, t.Status, t.TxUUID)
 	if err != nil {
 		dbLogger.Errorf("Failed executing statement:  %v", err)
 		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
