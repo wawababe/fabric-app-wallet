@@ -30,7 +30,7 @@ func (t *AccountCreateTask) Create(accountuuid string, tasktype TaskType, taskst
 	task.Keyword = accountuuid
 	task.BC_txuuid = ""
 	task.Type = TypeMap[tasktype]
-	task.State = StateMap[taskstate]
+	task.State = taskstate.String()
 	payloadBytes, _ := json.Marshal(account)
 	task.Payload = string(payloadBytes)
 

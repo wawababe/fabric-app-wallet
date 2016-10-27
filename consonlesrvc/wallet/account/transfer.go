@@ -101,7 +101,7 @@ func (t *Transfer) post(req *TransferRequest) (*TransferResponse) {
 
 	var task crontask.CronTask = new(crontask.AccountTransferTask)
 	var taskuuid string
-	taskuuid, err = task.Create(tx.TxUUID, crontask.TASK_TYPE_TRANSFER, crontask.TASK_STATE_INIT)
+	taskuuid, err = task.Create(tx.TxUUID, crontask.TYPE_ACCOUNT_TRANSFER, crontask.STATE_INIT)
 	if err != nil {
 		wtLogger.Errorf("failed to create task for createaccount event: %v", err)
 		res.Status = "error"

@@ -2,7 +2,6 @@ package crontask
 
 import (
 	"baas/app-wallet/consonlesrvc/common"
-	"github.com/op/go-logging"
 )
 
 var taskLogger = common.NewLogger("task")
@@ -38,18 +37,39 @@ const (
 	STATE_FAILED
 )
 
-var StateMap map[TaskState]string = map[TaskState]string {
-	STATE_INIT: "pending",
-	STATE_VALIDATE: "validate",
-	STATE_WAIT_VALIDATE: "wait_validate",
-	STATE_CREATE_ACCOUNT: "create_account",
-	STATE_WAIT_CREATE_ACCOUNT: "wait_create_account",
-	STATE_TRANSFER: "transfer",
-	STATE_WAIT_TRANSFER: "wait_transfer",
-	STATE_CHECK_BCTX: "check_bctX",
-	STATE_WAIT_CHECK_BCTX: "wait_check_bctx",
-	STATE_FIN: "fin",
-	STATE_FAILED: "failed",
+
+func (ts TaskState) String()string {
+	var stateMap map[TaskState]string = map[TaskState]string{
+		STATE_INIT: "pending",
+		STATE_VALIDATE: "validate",
+		STATE_WAIT_VALIDATE: "wait_validate",
+		STATE_CREATE_ACCOUNT: "create_account",
+		STATE_WAIT_CREATE_ACCOUNT: "wait_create_account",
+		STATE_TRANSFER: "transfer",
+		STATE_WAIT_TRANSFER: "wait_transfer",
+		STATE_CHECK_BCTX: "check_bctx",
+		STATE_WAIT_CHECK_BCTX: "wait_check_bctx",
+		STATE_FIN: "fin",
+		STATE_FAILED: "failed",
+	}
+	return stateMap[ts]
+}
+
+func ParseTaskState(ts string)TaskState {
+	var stateMap map[string]TaskState = map[string]TaskState{
+		"pending": STATE_INIT,
+		"validate": STATE_VALIDATE,
+		"wait_validate": STATE_WAIT_VALIDATE,
+		"create_account": STATE_CREATE_ACCOUNT,
+		"wait_create_account": STATE_WAIT_CREATE_ACCOUNT,
+		"transfer": STATE_TRANSFER,
+		"wait_transfer": STATE_WAIT_TRANSFER,
+		"check_bctx": STATE_CHECK_BCTX,
+		"wait_check_bctx": STATE_WAIT_CHECK_BCTX,
+		"fin": STATE_FIN,
+		"failed": STATE_FAILED,
+	}
+	return stateMap[ts]
 }
 
 

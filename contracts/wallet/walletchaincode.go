@@ -67,8 +67,8 @@ func (w *WalletChaincode) createAccount(stub shim.ChaincodeStubInterface, args [
 
 
 // args[0]: txuuid
-// args[1]: payeruuid,
-// args[2]: payeeuuid,
+// args[1]: payer accountuuid
+// args[2]: payee accountuuid
 // args[3]: amount
 func (w *WalletChaincode) accountTransfer(stub shim.ChaincodeStubInterface, args []string)([]byte, error){
 	var err error

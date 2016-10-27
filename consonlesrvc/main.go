@@ -15,6 +15,8 @@ import (
 	"baas/app-wallet/consonlesrvc/wallet/account"
 	"baas/app-wallet/consonlesrvc/wallet/transaction"
 	"baas/app-wallet/consonlesrvc/blockchain"
+	"github.com/robfig/cron"
+	"baas/app-wallet/consonlesrvc/wallet/cronjob"
 )
 
 var consLogger *logging.Logger = common.NewLogger("console") //logging.MustGetLogger("Console")
@@ -31,6 +33,11 @@ var routes map[string]interface{}= map[string]interface{}{
 func main() {
 	var db *sql.DB = database.GetDB()
 	defer db.Close()
+	var c = cron.New()
+	c.AddJob("*/5 * * * * ?", &cronjob.JobCreateAccount{})
+	c.AddJob("*/5 * * * * ?", &cronjob.JobAccountTransfer{})
+	c.Start()
+	defer c.Stop()
 
 	router := httprouter.New()
 

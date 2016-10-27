@@ -191,7 +191,7 @@ func UpdateTaskStatePayload(db *sql.DB, t *Task)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE task SET state = ? and payload = ? WHERE taskuuid = ? and deleted = 0")
+	stmt, err = db.Prepare("UPDATE task SET state = ?, payload = ? WHERE taskuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -199,6 +199,66 @@ func UpdateTaskStatePayload(db *sql.DB, t *Task)(int64, error){
 	defer stmt.Close()
 
 	addResult, err = stmt.Exec(t.State, t.Payload, t.TaskUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}
+
+func UpdateTask(db *sql.DB, t *Task)(int64, error){
+	dbLogger.Debug("UpdateTask...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE task SET bc_txuuid = ?, state = ?, payload = ? WHERE taskuuid = ? and deleted = 0")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+	dbLogger.Debugf("expecting to update task: %#v", *t)
+	addResult, err = stmt.Exec(t.BC_txuuid, t.State, t.Payload, t.TaskUUID)
+	if err != nil {
+		dbLogger.Errorf("Failed executing statement:  %v", err)
+		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
+	}
+
+	affectedRows, err = addResult.RowsAffected()
+	dbLogger.Debugf("Affected rows: %d", affectedRows)
+	return affectedRows, err
+}
+
+func DeleteTask(db *sql.DB, t *Task)(int64, error){
+	dbLogger.Debug("DeleteTask...")
+	var err error
+	var stmt *sql.Stmt
+	var addResult sql.Result
+	var affectedRows int64
+
+	if err := db.Ping(); err != nil {
+		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
+		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
+	}
+
+	stmt, err = db.Prepare("UPDATE task SET deleted = 1 WHERE taskuuid = ?")
+	if err != nil {
+		dbLogger.Errorf("Failed preparing statement: %v", err)
+		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
+	}
+	defer stmt.Close()
+	dbLogger.Debugf("expecting to delete task: %#v", *t)
+	addResult, err = stmt.Exec(t.TaskUUID)
 	if err != nil {
 		dbLogger.Errorf("Failed executing statement:  %v", err)
 		return 0, fmt.Errorf(ERROR_DB_EXECUTE + ": %v", err)
