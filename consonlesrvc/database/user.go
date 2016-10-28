@@ -112,7 +112,7 @@ func DeleteUser(db *sql.DB, u *User)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE user SET deleted = 1 WHERE useruuid = ?")
+	stmt, err = db.Prepare("UPDATE user SET deleted = 1 WHERE useruuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)

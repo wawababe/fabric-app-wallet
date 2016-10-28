@@ -251,7 +251,7 @@ func DeleteTask(db *sql.DB, t *Task)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE task SET deleted = 1 WHERE taskuuid = ?")
+	stmt, err = db.Prepare("UPDATE task SET deleted = 1 WHERE taskuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)

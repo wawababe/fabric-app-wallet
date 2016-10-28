@@ -80,7 +80,7 @@ func GetUserSession(db *sql.DB, userID string, sessionUUID string)(*UserSession,
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("SELECT rowid, useruuid, sessionuuid, expiredAt FROM USERSESSION WHERE useruuid = ? and sessionuuid = ?")
+	stmt, err = db.Prepare("SELECT rowid, useruuid, sessionuuid, expiredAt FROM USERSESSION WHERE useruuid = ? and sessionuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing stmt: %v", err)
 		return nil, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -109,7 +109,7 @@ func UpdateUserSession(db *sql.DB, us *UserSession)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE usersession SET expiredat = ? WHERE sessionuuid = ?")
+	stmt, err = db.Prepare("UPDATE usersession SET expiredat = ? WHERE sessionuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -127,8 +127,6 @@ func UpdateUserSession(db *sql.DB, us *UserSession)(int64, error){
 	return affectedRows, err
 }
 
-
-
 func DeleteUserSession(db *sql.DB, u *UserSession)(int64, error){
 	dbLogger.Debug("DeleteAccount...")
 	var err error
@@ -141,7 +139,7 @@ func DeleteUserSession(db *sql.DB, u *UserSession)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE usersession SET deleted = 1 WHERE sessionuuid = ?")
+	stmt, err = db.Prepare("UPDATE usersession SET deleted = 1 WHERE sessionuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)

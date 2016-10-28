@@ -159,7 +159,7 @@ func UpdateTransaction(db *sql.DB, t *Transaction)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE transaction SET bc_txuuid = ?, bc_blocknum = ?, status = ? WHERE txuuid = ?")
+	stmt, err = db.Prepare("UPDATE transaction SET bc_txuuid = ?, bc_blocknum = ?, status = ? WHERE txuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -189,7 +189,7 @@ func DeleteTransaction(db *sql.DB, t *Transaction)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE transaction SET deleted = 1 and status = ? WHERE txuuid = ?")
+	stmt, err = db.Prepare("UPDATE transaction SET deleted = 1 and status = ? WHERE txuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)

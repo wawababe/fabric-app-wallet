@@ -90,7 +90,7 @@ func GetAccountsByUseruuid(db *sql.DB, useruuid string)([]*Account, error){
 		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	if rows, err = db.Query("SELECT rowid, accountuuid, useruuid, accountname, accountid, amount, bc_txuuid, status FROM account where useruuid = ?", &useruuid); err != nil {
+	if rows, err = db.Query("SELECT rowid, accountuuid, useruuid, accountname, accountid, amount, bc_txuuid, status FROM account WHERE useruuid = ? and deleted = 0", &useruuid); err != nil {
 		dbLogger.Errorf("Failed getting accounts by useruuid %s : %v", useruuid, err)
 		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
 	}
@@ -138,34 +138,6 @@ func GetAccountByAccountID(db *sql.DB, accountid string) (*Account, error) {
 	return account, nil
 }
 
-/*
-func GetAccountByName(db *sql.DB, name string)(*Account, error){
-	dbLogger.Debug("GetAccountByName...")
-	var account = new(Account)
-	var err error
-	var stmt *sql.Stmt
-
-	if err := db.Ping(); err != nil {
-		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
-		return nil, errors.New(ERROR_DB_NOT_CONNECTED)
-	}
-
-	stmt, err = db.Prepare("SELECT rowid, accountuuid, useruuid, amount, accountname, bc_txuuid, status FROM account WHERE accountname = ? and deleted = 0")
-	if err != nil {
-		dbLogger.Errorf("Failed preparing statement: %v", err)
-		return nil, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
-	}
-	defer stmt.Close()
-
-	if err := stmt.QueryRow(name).Scan(&account.RowID, &account.AccountUUID, &account.UserUUID, &account.Amount, &account.AccountName, &account.BC_TXUUID, &account.Status); err != nil {
-		dbLogger.Errorf("Failed getting account by name %s", name, err)
-		return nil, fmt.Errorf(ERROR_DB_QUERY + ": %v", err)
-	}
-	dbLogger.Debugf("Get account by name %s: \n%#v", name, *account)
-
-	return account, nil
-}
-*/
 
 func DeleteAccount(db *sql.DB, u *Account)(int64, error){
 	dbLogger.Debug("DeleteAccount...")
@@ -179,7 +151,7 @@ func DeleteAccount(db *sql.DB, u *Account)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE account SET deleted = 1 and status = ? WHERE accountuuid = ?")
+	stmt, err = db.Prepare("UPDATE account SET deleted = 1 and status = ? WHERE accountuuid = ? where deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
@@ -209,7 +181,7 @@ func UpdateAccount(db *sql.DB, u *Account)(int64, error){
 		return 0, errors.New(ERROR_DB_NOT_CONNECTED)
 	}
 
-	stmt, err = db.Prepare("UPDATE account SET amount = ?, bc_txuuid = ?, status = ? WHERE accountuuid = ?")
+	stmt, err = db.Prepare("UPDATE account SET amount = ?, bc_txuuid = ?, status = ? WHERE accountuuid = ? and deleted = 0")
 	if err != nil {
 		dbLogger.Errorf("Failed preparing statement: %v", err)
 		return 0, fmt.Errorf(ERROR_DB_PREPARED + ": %v", err)
