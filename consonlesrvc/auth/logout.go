@@ -28,7 +28,6 @@ func (t *Logout) post(req *LogoutRequest) *LogoutResponse {
 	var err error
 	var db *sql.DB = database.GetDB()
 
-	var authRes *AuthResponse = new(AuthResponse)
 	if !req.IsRequestValid(&res.AuthResponse) {
 		authLogger.Warningf("request not valid: %#v", *req)
 		res.Status = "error"
@@ -38,15 +37,19 @@ func (t *Logout) post(req *LogoutRequest) *LogoutResponse {
 	}
 
 	var session *database.UserSession = new(database.UserSession)
-	if session, err = database.GetUserSession(db, authRes.UserUUID, req.SessionID); err != nil {
-		authLogger.Errorf("failed to logout, can't getusersession by useruuid %s and sessionuuid %s", authRes.UserUUID, req.SessionID)
+	if session, err = database.GetUserSession(db, res.UserUUID, req.SessionID); err != nil {
+		authLogger.Errorf("failed to logout, can't getusersession by useruuid %s and sessionuuid %s", res.UserUUID, req.SessionID)
 		res.Status = "error"
-		res.Message = "failed to refresh, can't getusersession"
+		res.Message = "failed to logout, can't getusersession"
 		return res
 	}
 
 	//todo: need to add deleted field for usersession table; then update this field as 1(deleted)
-	database.UpdateUserSession(db, session)
+	if _, err = database.DeleteUserSession(db, session); err != nil {
+		authLogger.Errorf("failed to logout, can't delete usersession %#v: %v", *session, err)
+		res.Status = "error"
+		res.Message = "failed to logout: " + err.Error()
+	}
 
 	res.Status = "ok"
 	res.Message = "sucessed in logging out"

@@ -21,55 +21,18 @@ import (
 
 var consLogger *logging.Logger = common.NewLogger("console") //logging.MustGetLogger("Console")
 
-/*
-var routes map[string]interface{}= map[string]interface{}{
-	"authsrvc.Login": new(authsrvc.Login),
-	"authsrvc.Signup": new(authsrvc.Signup),
-	"authsrvc.Refresh": new(authsrvc.Refresh),
-	"authsrvc.Logout": new(authsrvc.Logout),
-}
-*/
 
 func main() {
 	var db *sql.DB = database.GetDB()
 	defer db.Close()
 	var c = cron.New()
-	c.AddJob("*/5 * * * * ?", &cronjob.JobCreateAccount{})
-	c.AddJob("*/5 * * * * ?", &cronjob.JobAccountTransfer{})
+	c.AddJob("*/1 * * * * ?", &cronjob.JobCreateAccount{})
+	c.AddJob("*/1 * * * * ?", &cronjob.JobAccountTransfer{})
 	c.Start()
 	defer c.Stop()
 
 	router := httprouter.New()
 
-	/*
-		prefix := "/auth/"
-		for _, instance := range routes {
-			v := reflect.ValueOf(instance)
-			t := v.Type()
-			for i := 0; i < t.NumMethod(); i++{
-				methodType := v.Method(i).Type()
-				consLogger.Debugf("func (%s) %s%s", t, t.Method(i).Name,
-					strings.TrimPrefix(methodType.String(), "func"))
-				paths := strings.Split(t.String(),".")
-				path := prefix + strings.ToLower(paths[len(paths)-1])
-				switch instance.(type) {
-				case authsrvc.Login:
-					f := instance.(authsrvc.Login)
-					router.Handle(strings.ToUpper(t.Method(i).Name), path, f.Post)
-				case authsrvc.Signup:
-					f := instance.(authsrvc.Signup)
-					router.Handle(strings.ToUpper(t.Method(i).Name), path, f.Post)
-				case authsrvc.Refresh:
-					f := instance.(authsrvc.Refresh)
-					router.Handle(strings.ToUpper(t.Method(i).Name), path, f.Post)
-				case authsrvc.Logout:
-					f := instance.(authsrvc.Logout)
-					router.Handle(strings.ToUpper(t.Method(i).Name), path, f.Post)
-				}
-				consLogger.Infof("register router %s with mehtod %s", strings.ToUpper(t.Method(i).Name), path)
-			}
-		}
-	*/
 
 	router.Handle("POST", "/auth/login", authsrvc.LoginPost)
 	router.Handle("POST", "/auth/signup", authsrvc.SignupPost)
