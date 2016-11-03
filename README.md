@@ -14,7 +14,7 @@
   `$ docker tag hyperledger/fabric-baseimage:x86_64-0.2.0 hyperledger/fabric-baseimage:latest`
 
 3. Start the hyperledger/fabric-peer and hyperledger/fabric-membersrvc 
-  using the docker-compose file in directory docker
+  using the [docker-compose file](docker/docker-compose.yml) in directory docker
   `$ cd docker && docker-compose up`
   
   Some extra knowledge to make use of docker: 
@@ -27,7 +27,7 @@
 ### Set up mysql
 1. Make sure you have installed mysql (version  Ver 14.14 Distrib 5.7.14)
 2. sign in mysql as root and create a new account for development
-3. modify the USERNAME and PASSWORD specified in the scripts/mysql/create_table.sh 
+3. modify the USERNAME and PASSWORD specified in the [create_table script](scripts/mysql/create_table.sh)
 4. create tables by execute the script:
   `$ ./create_table.sh`
 

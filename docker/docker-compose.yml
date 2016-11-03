@@ -12,7 +12,7 @@ membersrvc:
         - "7054:7054"
     command: membersrvc
 vp0:
-    image: 54.223.84.115:5000/hyperledger/fabric-peer
+    image: hyperledger/fabric-peer
     environment:
         - CORE_PEER_ADDRESSAUTODETECT=true
         - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
