@@ -35,11 +35,11 @@
 ## Set up the project 
   Make sure you have installed Intellij IDEA 2016.2 and the plugin Go for golang programming language
 ### Set up wallet application server
-1. import the source code under diretory consolesrvc as a project through IntelliJ IDEA 2016.2
+1. import the source code under diretory [consolesrvc](consolesrvc) as a project through IntelliJ IDEA 2016.2
 2. configure the environmental variables
     PEER_ADDRESS: http://127.0.0.1:7050
 
 ### Set up chaincode for development
-1. import the chaincode under directory contracts as a project through IntelliJ IDEA 2016.2
+1. import the chaincode under directory [contracts](consolesrvc) as a project through IntelliJ IDEA 2016.2
 2. ...
   
