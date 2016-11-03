@@ -40,6 +40,6 @@
     PEER_ADDRESS: http://127.0.0.1:7050
 
 ### Set up chaincode for development
-1. import the chaincode under directory [contracts](consolesrvc) as a project through IntelliJ IDEA 2016.2
+1. import the chaincode under directory [contracts](contracts) as a project through IntelliJ IDEA 2016.2
 2. ...
   
