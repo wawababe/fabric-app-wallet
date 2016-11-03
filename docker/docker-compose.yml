@@ -1,0 +1,36 @@
+membersrvc:
+    image: hyperledger/fabric-membersrvc
+    environment: 
+        - MEMBERSRVC_CA_LOGGING_SERVER=DEBUG
+        - MEMBERSRVC_CA_LOGGING_CA=DEBUG
+        - MEMBERSRVC_CA_LOGGING_ECA=DEBUG
+        - MEMBERSRVC_CA_LOGGING_ECAP=DEBUG
+        - MEMBERSRVC_CA_LOGGING_ECAA=DEBUG
+        - MEMBERSRVC_CA_LOGGING_TCA=DEBUG
+        - MEMBERSRVC_CA_LOGGING_TCAP=DEBUG
+    ports: 
+        - "7054:7054"
+    command: membersrvc
+vp0:
+    image: 54.223.84.115:5000/hyperledger/fabric-peer
+    environment:
+        - CORE_PEER_ADDRESSAUTODETECT=true
+        - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
+        - CORE_LOGGING_LEVEL=DEBUG
+        - CORE_PEER_ID=vp0
+        - CORE_PEER_PKI_ECA_PADDR=membersrvc:7054
+        - CORE_PEER_PKI_TCA_PADDR=membersrvc:7054
+        - CORE_PEER_PKI_TLSCA_PADDR=membersrvc:7054
+        - CORE_SECURITY_ENABLED=true
+        - CORE_SECURITY_ENROLLID=test_vp0
+        - CORE_SECURITY_ENROLLSECRET=MwYpmSRjupbT
+    ports:
+        - "7050:7050"
+        - "7051:7051"
+    volumes:
+        - /usr/bin/docker:/usr/bin/docker:ro
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /Users/ting/work/src/baas:/opt/gopath/src/baas  
+    links:
+        - membersrvc
+    command: sh -c "sleep 5; peer node start --peer-chaincodedev"
