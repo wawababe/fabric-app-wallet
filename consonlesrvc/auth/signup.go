@@ -36,7 +36,7 @@ func (t *Signup) post(req *SignupRequest)(*SignupResponse){
 	res.Status = "ok"
 
 	if _, err = database.GetUserByName(db, req.username); err == nil {
-		authLogger.Warningf("failedd to sign up, user %s has existed", req.username)
+		authLogger.Warningf("failed to sign up, user %s has existed", req.username)
 		res.Status = "error"
 		res.Message = "failed to signup duplicate user"
 		return res
@@ -46,9 +46,9 @@ func (t *Signup) post(req *SignupRequest)(*SignupResponse){
 	user.Password = req.password
 	user.UserUUID = common.GenerateUUID()
 	if _, err = database.AddUser(db, user); err != nil {
-		authLogger.Errorf("failedd to adduser %#v: %v", user, err)
+		authLogger.Errorf("failed to adduser %#v: %v", user, err)
 		res.Status = "error"
-		res.Message = "failedd to signup, adduser error"
+		res.Message = "failed to signup, adduser error"
 		return res
 	}
 
@@ -58,9 +58,9 @@ func (t *Signup) post(req *SignupRequest)(*SignupResponse){
 	session.AddExpiredTimeByDays(SESSION_EXPIRATION_DAYS)
 	//todo: make db as an interface, make use of reflect: db.Add(instance) ==> instance.Add()
 	if _, err := database.AddUserSession(db, session); err != nil {
-		authLogger.Errorf("failedd to login, can't add user session %#v: %v", session, err)
+		authLogger.Errorf("failed to login, can't add user session %#v: %v", session, err)
 		res.Status = "error"
-		res.Message = "failedd to login, can't generate new session"
+		res.Message = "failed to login, can't generate new session"
 		return res
 	}
 	res.Session = session.SessionUUID
@@ -87,7 +87,7 @@ func SignupPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	resBytes, err = json.Marshal(*res)
 	if err != nil {
-		authLogger.Fatalf("failedd to marshal response as []byte: %v", err)
+		authLogger.Fatalf("failed to marshal response as []byte: %v", err)
 	}
 	fmt.Fprintf(w, "%s", string(resBytes))
 
