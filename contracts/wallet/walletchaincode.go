@@ -61,7 +61,7 @@ func (w *WalletChaincode) createAccount(stub shim.ChaincodeStubInterface, args [
 		return nil, fmt.Errorf("failed to create account %#v: %v", *act, err)
 	}
 
-	wtLogger.Debugf("successed in creating account %#v", *act)
+	wtLogger.Debugf("succeeded in creating account %#v", *act)
 	return json.Marshal(act)
 }
 
@@ -137,7 +137,7 @@ func (w *WalletChaincode) accountTransfer(stub shim.ChaincodeStubInterface, args
 		payee.putAccount(stub)
 		return nil, fmt.Errorf("failed to put transaction %#v into ledger: %v", *tx, err)
 	}
-	wtLogger.Debugf("successed in transfer %d money from payer %s to payee %s", payamount, payeruuid, payeeuuid)
+	wtLogger.Debugf("succeeded in transfer %d money from payer %s to payee %s", payamount, payeruuid, payeeuuid)
 	return nil, nil
 }
 
@@ -155,7 +155,7 @@ func (w *WalletChaincode) getAccount(stub shim.ChaincodeStubInterface, args []st
 		wtLogger.Errorf("failed to get account %s: %v", accountuuid, err)
 		return nil, fmt.Errorf("failed to get account %s: %v", accountuuid, err)
 	}
-	wtLogger.Debug("successed in getting account %#v", *account)
+	wtLogger.Debug("succeeded in getting account %#v", *account)
 	return json.Marshal(account)
 }
 
@@ -174,6 +174,6 @@ func (w *WalletChaincode) getTransaction(stub shim.ChaincodeStubInterface, args 
 		wtLogger.Errorf("failed to get transaction %s: %v", txuuid, err)
 		return nil, fmt.Errorf("failed to get transaction %s: %v", txuuid, err)
 	}
-	wtLogger.Debugf("successed in getting transaction %#v", *tx)
+	wtLogger.Debugf("succeeded in getting transaction %#v", *tx)
 	return json.Marshal(tx)
 }

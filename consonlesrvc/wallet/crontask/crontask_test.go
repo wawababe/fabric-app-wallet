@@ -9,7 +9,7 @@ func TestAccountCreateTask_Create(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to create task for accountcreate event: %v", err)
 	}
-	taskLogger.Debugf("successed in creating task %s for accountcreate event", taskuuid)
+	taskLogger.Debugf("succeeded in creating task %s for accountcreate event", taskuuid)
 
 }
 

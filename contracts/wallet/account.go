@@ -38,7 +38,7 @@ func (t *Account) Create(stub shim.ChaincodeStubInterface) (error) {
 		wtLogger.Errorf("failed putaccount: %v", err)
 		return fmt.Errorf("failed putaccount: %v", err)
 	}
-	wtLogger.Debugf("successed in creating account %#v", *t)
+	wtLogger.Debugf("succeeded in creating account %#v", *t)
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (t *Account) putAccount(stub shim.ChaincodeStubInterface) error {
 		wtLogger.Fatalf("failed putting account %#v into ledger: %v", *t, err)
 		return fmt.Errorf("failed putting account %#v into ledger: %v", *t, err)
 	}
-	wtLogger.Debugf("successed in putting account %#v with key %s into ledger", *t, t.buildKey(t.AccountUUID))
+	wtLogger.Debugf("succeeded in putting account %#v with key %s into ledger", *t, t.buildKey(t.AccountUUID))
 
 	return nil
 }

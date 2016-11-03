@@ -34,7 +34,7 @@ func (t *Transaction) PutTransaction(stub shim.ChaincodeStubInterface) (error) {
 		wtLogger.Fatalf("failed putting transaction %#v into ledger: %v", *t, err)
 		return fmt.Errorf("failed putting transaction %#v into ledger: %v", *t, err)
 	}
-	wtLogger.Debugf("successed in putting transaction %#v with key %s into ledger", *t, t.buildKey(t.TxUUID))
+	wtLogger.Debugf("succeeded in putting transaction %#v with key %s into ledger", *t, t.buildKey(t.TxUUID))
 
 	return nil
 }
