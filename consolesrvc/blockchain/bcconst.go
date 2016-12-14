@@ -2,7 +2,7 @@ package blockchain
 
 import (
 	"github.com/op/go-logging"
-	"baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/common"
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 

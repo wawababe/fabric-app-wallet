@@ -3,7 +3,7 @@ package database
 import (
 	"testing"
 	"database/sql"
-	util "baas/app-wallet/consonlesrvc/common"
+	util "baas/app-wallet/consolesrvc/common"
 )
 
 func TestAddTransaction(t *testing.T) {

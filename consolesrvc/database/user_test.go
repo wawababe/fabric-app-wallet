@@ -7,7 +7,7 @@ import (
 	"database/sql"
 	"io"
 	"fmt"
-	util "baas/app-wallet/consonlesrvc/common"
+	util "baas/app-wallet/consolesrvc/common"
 	_ "github.com/go-sql-driver/mysql"
 )
 

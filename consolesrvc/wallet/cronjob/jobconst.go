@@ -2,10 +2,10 @@ package cronjob
 
 import (
 	"os"
-	util "baas/app-wallet/consonlesrvc/common"
+	util "baas/app-wallet/consolesrvc/common"
 	"database/sql"
-	"baas/app-wallet/consonlesrvc/database"
-	"baas/app-wallet/consonlesrvc/wallet/crontask"
+	"baas/app-wallet/consolesrvc/database"
+	"baas/app-wallet/consolesrvc/wallet/crontask"
 	"errors"
 	"time"
 	"net/http"
@@ -56,7 +56,7 @@ func NewPeerInvokeReq(funcname string, args []string)(*PeerInvokeReq){
 				Function: funcname,
 				Args: args,
 			},
-			SecureContext: "diego",
+			//SecureContext: "diego",
 		},
 		ID: 1,
 	}

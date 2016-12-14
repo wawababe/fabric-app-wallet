@@ -43,3 +43,8 @@
 1. import the chaincode under directory [contracts](contracts) as a project through IntelliJ IDEA 2016.2
 2. ...
   
+
+## 启动mysql
+```bash
+mysql -hlocalhost -ubcapp -pDTXa9ytsNXpSEFuu6CPWc3ZxMcGiTpBq66mYyk9WYlI=
+```

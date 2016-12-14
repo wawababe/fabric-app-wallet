@@ -5,11 +5,11 @@ import (
 //	"database/sql"
 	"github.com/julienschmidt/httprouter"
 	_ "github.com/go-sql-driver/mysql"
-	"baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/common"
 	"net/http"
 	"encoding/json"
 	"database/sql"
-	"baas/app-wallet/consonlesrvc/database"
+	"baas/app-wallet/consolesrvc/database"
 )
 
 type SignupRequest struct {

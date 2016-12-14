@@ -6,8 +6,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"database/sql"
-	"baas/app-wallet/consonlesrvc/database"
-	util "baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/database"
+	util "baas/app-wallet/consolesrvc/common"
 	"strings"
 )
 

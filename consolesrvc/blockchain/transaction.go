@@ -1,14 +1,14 @@
 package blockchain
 
 import (
-	"baas/app-wallet/consonlesrvc/auth"
+	"baas/app-wallet/consolesrvc/auth"
 	"github.com/julienschmidt/httprouter"
 	"encoding/json"
 	"net/http"
 	"fmt"
 	"os"
 	"strings"
-	util "baas/app-wallet/consonlesrvc/common"
+	util "baas/app-wallet/consolesrvc/common"
 )
 
 type TransactionDetailRequest struct {

@@ -2,8 +2,8 @@ package cronjob
 
 import (
 	"database/sql"
-	"baas/app-wallet/consonlesrvc/database"
-	"baas/app-wallet/consonlesrvc/wallet/crontask"
+	"baas/app-wallet/consolesrvc/database"
+	"baas/app-wallet/consolesrvc/wallet/crontask"
 	"encoding/json"
 	"strconv"
 	"bytes"

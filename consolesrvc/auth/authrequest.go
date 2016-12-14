@@ -1,10 +1,10 @@
 package authsrvc
 
 import (
-	"baas/app-wallet/consonlesrvc/database"
+	"baas/app-wallet/consolesrvc/database"
 	"strings"
 	"database/sql"
-	"baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/common"
 )
 
 type AuthRequest struct {

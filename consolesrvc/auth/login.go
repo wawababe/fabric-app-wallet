@@ -1,12 +1,12 @@
 package authsrvc
 
 import (
-	"baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/common"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
-	"baas/app-wallet/consonlesrvc/database"
+	"baas/app-wallet/consolesrvc/database"
 	"database/sql"
 	"strings"
 )

@@ -1,7 +1,7 @@
 package crontask
 
 import (
-	"baas/app-wallet/consonlesrvc/common"
+	"baas/app-wallet/consolesrvc/common"
 )
 
 var taskLogger = common.NewLogger("task")
