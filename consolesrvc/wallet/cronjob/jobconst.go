@@ -1,7 +1,6 @@
 package cronjob
 
 import (
-	"os"
 	util "baas/app-wallet/consolesrvc/common"
 	"database/sql"
 	"baas/app-wallet/consolesrvc/database"
@@ -10,6 +9,7 @@ import (
 	"time"
 	"net/http"
 	"fmt"
+	"github.com/spf13/viper"
 )
 
 var jobLogger = util.NewLogger("CronJob")
@@ -79,14 +79,15 @@ func setTaskState(db *sql.DB, task *database.Task, newState crontask.TaskState)(
 const (
 	ENV_DEFAULT_PEER_ADDRESS = "http://127.0.0.1:7050"
 )
-var ENV_PeerAddress = ""
+
 func MustGetPeerAddress()string{
-	ENV_PeerAddress = os.Getenv("PEER_ADDRESS"); //ignore empty PEER_ADDRESS
-	if len(ENV_PeerAddress) == 0 {
-		jobLogger.Warningf("Environmental variable PEER_ADDRESS not exist, set as default local address: %s", ENV_DEFAULT_PEER_ADDRESS)
+	//ENV_PeerAddress = os.Getenv("WALLET_PEER_ADDRESS"); //ignore empty PEER_ADDRESS
+	peerAddress := viper.GetString("fabric.peer.address")
+	if len(peerAddress) == 0 {
+		jobLogger.Warningf("Env WALLET_FABRIC_PEER_ADDRESS not exist, set as default local address: %s", ENV_DEFAULT_PEER_ADDRESS)
 		return ENV_DEFAULT_PEER_ADDRESS
 	}
-	return ENV_PeerAddress
+	return peerAddress
 }
 
 

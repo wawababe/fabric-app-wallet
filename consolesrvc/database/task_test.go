@@ -9,14 +9,11 @@ import (
 )
 
 func TestAddTask(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
-
 	var testNum = 2
-
 	var useruuid string = "24c78d82-1b28-4dc6-82de-7648ffc87576"
 	var accountuuid string = "3a4603e0-a76f-4c77-a9ca-60a717f80e80"
 	var account *Account = new(Account)
@@ -73,11 +70,10 @@ func TestAddTask(t *testing.T) {
 }
 
 func TestGetTaskByUUID(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
 
 //	var useruuid string = "24c78d82-1b28-4dc6-82de-7648ffc87576"
 //	var accountuuid string = "3a4603e0-a76f-4c77-a9ca-60a717f80e80"
@@ -92,12 +88,10 @@ func TestGetTaskByUUID(t *testing.T) {
 }
 
 func TestGetTasksByTypeState(t *testing.T) {
-	var db *sql.DB
-	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
+	var db *sql.DB = GetDB()
+	defer db.Close()
 
+	var err error
 	//	var useruuid string = "24c78d82-1b28-4dc6-82de-7648ffc87576"
 	//	var accountuuid string = "3a4603e0-a76f-4c77-a9ca-60a717f80e80"
 	//var taskuuid string = "10d9ea60-2617-493e-a261-06d46afe480c"
@@ -117,11 +111,10 @@ func TestGetTasksByTypeState(t *testing.T) {
 }
 
 func TestGetTasksByKeywordTypeState(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
 
 	//	var useruuid string = "24c78d82-1b28-4dc6-82de-7648ffc87576"
 	//	var accountuuid string = "3a4603e0-a76f-4c77-a9ca-60a717f80e80"
@@ -143,11 +136,10 @@ func TestGetTasksByKeywordTypeState(t *testing.T) {
 }
 
 func TestUpdateTaskState(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
 
 	//	var useruuid string = "24c78d82-1b28-4dc6-82de-7648ffc87576"
 	//	var accountuuid string = "3a4603e0-a76f-4c77-a9ca-60a717f80e80"

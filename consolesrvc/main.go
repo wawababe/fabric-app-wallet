@@ -17,12 +17,31 @@ import (
 	"baas/app-wallet/consolesrvc/wallet/account"
 	"baas/app-wallet/consolesrvc/wallet/transaction"
 	"baas/app-wallet/consolesrvc/blockchain"
+	"github.com/spf13/viper"
+	"strings"
+	"fmt"
 )
 
 var consLogger *logging.Logger = common.NewLogger("console") //logging.MustGetLogger("Console")
 
+var envRoot="wallet"
 
 func main() {
+	// For environment variables
+	viper.SetEnvPrefix(envRoot)
+	viper.AutomaticEnv()
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+
+	// Set the configuration file
+	viper.SetConfigName(envRoot)
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("$GOPATH/src/baas/app-wallet/consolesrvc")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Fatal Error when reading config file %s: %s\n",envRoot, err))
+	}
+
+	database.InitDB(viper.GetString("database.mysql.dsn"))
 	var db *sql.DB = database.GetDB()
 	defer db.Close()
 	var c = cron.New()

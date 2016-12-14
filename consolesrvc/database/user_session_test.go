@@ -9,14 +9,10 @@ import (
 
 
 func TestAddUserSession(t *testing.T) {
-	var db *sql.DB
-	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
+	var db *sql.DB = GetDB()
+	defer db.Close()
 
 	var testNum = 2
-
 	var usersessions = make([]UserSession, testNum)
 	for i, _ := range usersessions {
 		usersessions[i].SessionUUID = util.GenerateUUID()
@@ -47,12 +43,10 @@ func TestAddUserSession(t *testing.T) {
 }
 
 func TestGetUserSession(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
 	var err error
 	var us *UserSession
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
-	}
 
 	var useruuid, sessionuuid string
 	useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"

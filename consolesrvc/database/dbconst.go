@@ -5,13 +5,12 @@ import (
 	"database/sql"
 	"baas/app-wallet/consolesrvc/common"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/viper"
 )
 
 var dbLogger *logging.Logger = common.NewLogger("database")//logging.MustGetLogger("database")
 var db *sql.DB
-
-const (
-	DSN string = "root:101812@/app_wallet"
+const(
 	DATETIME_FORMAT = "2006-01-02 15:04:05"
 )
 
@@ -22,17 +21,22 @@ var (
 	ERROR_DB_QUERY = "failed quering sql statement"
 )
 
-func init(){
+func InitDB(dsn string) *sql.DB{
 	db = new(sql.DB)
-
 	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
+	if db, err = sql.Open("mysql", dsn); err != nil {
 		dbLogger.Fatal(err)
 	}
-
-
+	return db
 }
 
 func GetDB()*sql.DB {
+	if db == nil { // todo: could be removed out; Just for test
+		viper.SetConfigName("wallet")
+		viper.AddConfigPath("$GOPATH/src/baas/app-wallet/consolesrvc")
+		viper.AddConfigPath(".")
+		viper.ReadInConfig()
+		return InitDB(viper.GetString("database.mysql.dsn"))
+	}
 	return db
 }

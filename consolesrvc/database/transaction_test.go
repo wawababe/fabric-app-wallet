@@ -7,27 +7,24 @@ import (
 )
 
 func TestAddTransaction(t *testing.T) {
-	var db *sql.DB
-	var err error
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal("Failed opening database")
-	}
+	var db *sql.DB = GetDB()
+	defer db.Close()
 
 	var testNum = 2
 
 	var trans = make([]Transaction, testNum)
 	for i, _ := range trans {
-		trans[i].TXUUID = util.GenerateUUID()
+		trans[i].TxUUID = util.GenerateUUID()
 		trans[i].PayerUUID = util.GenerateUUID()
 		trans[i].PayeeUUID = util.GenerateUUID()
-		trans[i].PayerAccount = util.GenerateUUID()
-		trans[i].PayeeAccount = util.GenerateUUID()
+		trans[i].PayerAccountID = util.GenerateUUID()
+		trans[i].PayeeAccountID = util.GenerateUUID()
 		trans[i].Amount = 30
 		trans[i].Status = "pending"
 		dbLogger.Debugf("transaction: %#v", trans[i])
 	}
 	trans[0].PayerUUID = "5cdb617c-2712-480a-a02b-facd8c86e579"
-	trans[1].TXUUID = trans[0].TXUUID
+	trans[1].TxUUID = trans[0].TxUUID
 
 	var tests = []struct{
 		newline bool
@@ -48,13 +45,11 @@ func TestAddTransaction(t *testing.T) {
 }
 
 func TestGetTransactionByTransUUID(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
 	var us *Transaction
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
-	}
-
 	var txuuid string
 	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"
 	txuuid = "4b264cf2-deaf-496d-8eb9-49ee39044e6e"
@@ -66,12 +61,11 @@ func TestGetTransactionByTransUUID(t *testing.T) {
 }
 
 func TestGetTransactionsByPayeruuid(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
 	var txs []*Transaction
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
-	}
 
 	var useruuid string = "5cdb617c-2712-480a-a02b-facd8c86e579"
 	txs, err = GetTransactionsByPayeruuid(db, useruuid)
@@ -84,12 +78,11 @@ func TestGetTransactionsByPayeruuid(t *testing.T) {
 }
 
 func TestUpdateTransaction(t *testing.T) {
-	var db *sql.DB
+	var db *sql.DB = GetDB()
+	defer db.Close()
+
 	var err error
 	var us *Transaction
-	if db, err = sql.Open("mysql", DSN); err != nil {
-		dbLogger.Fatal(ERROR_DB_NOT_CONNECTED)
-	}
 
 	var txuuid string
 	//useruuid = "5cdb617c-2712-480a-a02b-facd8c86e579"

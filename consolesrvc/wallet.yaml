@@ -1,0 +1,15 @@
+# Configuration for App-Wallet
+# 2016年12月14日 星期三 15时28分58秒 CST
+#
+version:
+  hyperledger:
+    baseproject: v0.6.1-preview
+database:
+  mysql:
+    # should modify the dsn to real source, the corresponding env variable is WALLET_DATABABSE_MYSQL_DSN
+    dsn: username:password@/database
+fabric:
+  peer:
+    # should change to real address of fabric peer, the corresponding env variable is WALLET_FABRIC_PEER_ADDRESS
+    address: http://127.0.0.1:7050
+

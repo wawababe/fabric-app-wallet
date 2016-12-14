@@ -4,7 +4,6 @@ import (
 	"testing"
 	"hash"
 	"crypto/sha256"
-	"database/sql"
 	"io"
 	"fmt"
 	util "baas/app-wallet/consolesrvc/common"
@@ -12,10 +11,7 @@ import (
 )
 
 func TestAddUser(t *testing.T) {
-	db, err := sql.Open("mysql", DSN)
-	if err != nil {
-		dbLogger.Fatal(err)
-	}
+	db := GetDB()
 	defer db.Close()
 
 	if err := db.Ping(); err != nil {
@@ -41,13 +37,11 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestGetUserByName(t *testing.T) {
-	db, err := sql.Open("mysql", DSN)
-	if err != nil {
-		dbLogger.Fatal(err)
-	}
+	db := GetDB()
 	defer db.Close()
+	var err error
 
-	if err := db.Ping(); err != nil {
+	if err = db.Ping(); err != nil {
 		dbLogger.Error(ERROR_DB_NOT_CONNECTED)
 	}
 
